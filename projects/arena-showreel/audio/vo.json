@@ -1,0 +1,51 @@
+[
+  {
+    "id": "01",
+    "file": "vo/01.mp3",
+    "t": 0.5,
+    "dur": 3.5,
+    "text": "[confident] Two cubers. One scramble. No excuses."
+  },
+  {
+    "id": "02",
+    "file": "vo/02.mp3",
+    "t": 4.5,
+    "dur": 5.172,
+    "text": "This is Arena, by CubeNation. A speedcubing timer with the battle built in."
+  },
+  {
+    "id": "03",
+    "file": "vo/03.mp3",
+    "t": 10.0,
+    "dur": 3.866,
+    "text": "Create a room. Send each player their link. No account needed."
+  },
+  {
+    "id": "04",
+    "file": "vo/04.mp3",
+    "t": 14.0,
+    "dur": 3.5,
+    "text": "Same scramble for both. Fifteen seconds to inspect."
+  },
+  {
+    "id": "05",
+    "file": "vo/05.mp3",
+    "t": 18.0,
+    "dur": 2.847,
+    "text": "[excited] Hold until green. Release. Race."
+  },
+  {
+    "id": "06",
+    "file": "vo/06.mp3",
+    "t": 23.0,
+    "dur": 4.023,
+    "text": "The host runs the match, and every piece streams straight into OBS."
+  },
+  {
+    "id": "07",
+    "file": "vo/07.mp3",
+    "t": 27.0,
+    "dur": 2.795,
+    "text": "[excited] Arena. Race friends face to face."
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "name": "motividio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Code-first motion studio: prompt -> brief -> HTML composition -> deterministic frame render -> MP4",
+  "type": "module",
+  "scripts": {
+    "new": "node engine/new.mjs",
+    "preview": "node engine/serve.mjs",
+    "stills": "node engine/stills.mjs",
+    "render": "node engine/render.mjs",
+    "score": "node engine/audio/score.mjs",
+    "mix": "node engine/audio/mix.mjs",
+    "tts": "node engine/audio/tts-fish.mjs",
+    "ref": "node engine/ref.mjs",
+    "capture": "node engine/capture.mjs",
+    "doctor": "node engine/doctor.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0"
+  }
+}

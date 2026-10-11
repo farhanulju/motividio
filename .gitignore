@@ -1,0 +1,7 @@
+node_modules/
+.env
+projects/*/out/
+references/*/source.*
+references/*/frames/
+references/*/audio.wav
+projects/*/audio/*.wav

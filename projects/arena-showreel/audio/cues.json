@@ -1,0 +1,530 @@
+{
+  "comp": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60,
+    "duration": 30,
+    "format": "16x9",
+    "formats": [
+      "16x9"
+    ]
+  },
+  "cues": [
+    {
+      "t": 0.48,
+      "type": "swoosh",
+      "gain": 0.3
+    },
+    {
+      "t": 1.67,
+      "type": "swoosh",
+      "gain": 0.25
+    },
+    {
+      "t": 1.8,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 1.8625,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 1.925,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 2.425,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 2.4875,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 2.55,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 2.6125,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 2.675,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 2.86,
+      "type": "thump",
+      "gain": 0.9
+    },
+    {
+      "t": 2.86,
+      "type": "swoosh",
+      "gain": 0.35
+    },
+    {
+      "t": 3.98,
+      "type": "whoosh",
+      "gain": 0.45
+    },
+    {
+      "t": 4.62,
+      "type": "swoosh",
+      "gain": 0.3
+    },
+    {
+      "t": 4.98,
+      "type": "pop",
+      "gain": 0.25
+    },
+    {
+      "t": 5.84,
+      "type": "tick",
+      "gain": 0.25
+    },
+    {
+      "t": 7,
+      "type": "whoosh",
+      "gain": 0.4,
+      "dur": 0.7
+    },
+    {
+      "t": 8.36,
+      "type": "pop",
+      "gain": 0.3
+    },
+    {
+      "t": 8.7,
+      "type": "tick",
+      "gain": 0.25
+    },
+    {
+      "t": 8.85,
+      "type": "tick",
+      "gain": 0.25,
+      "pitch": 1.15
+    },
+    {
+      "t": 9.75,
+      "type": "whoosh",
+      "gain": 0.5,
+      "dur": 0.5,
+      "lo": 200,
+      "hi": 5000
+    },
+    {
+      "t": 10.14,
+      "type": "click"
+    },
+    {
+      "t": 10.32,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 10.3867,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 10.4533,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 10.5867,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 10.6533,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 10.72,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 10.87,
+      "type": "click"
+    },
+    {
+      "t": 11.15,
+      "type": "swoosh",
+      "gain": 0.22,
+      "pitch": 1
+    },
+    {
+      "t": 11.3,
+      "type": "swoosh",
+      "gain": 0.22,
+      "pitch": 1.1
+    },
+    {
+      "t": 11.45,
+      "type": "swoosh",
+      "gain": 0.22,
+      "pitch": 1.2
+    },
+    {
+      "t": 11.7,
+      "type": "pop",
+      "gain": 0.3,
+      "pitch": 1
+    },
+    {
+      "t": 11.85,
+      "type": "pop",
+      "gain": 0.3,
+      "pitch": 1.08
+    },
+    {
+      "t": 12,
+      "type": "pop",
+      "gain": 0.3,
+      "pitch": 1.16
+    },
+    {
+      "t": 12.02,
+      "type": "chime",
+      "gain": 0.16
+    },
+    {
+      "t": 12.17,
+      "type": "chime",
+      "gain": 0.16
+    },
+    {
+      "t": 12.32,
+      "type": "chime",
+      "gain": 0.16
+    },
+    {
+      "t": 12.47,
+      "type": "pop",
+      "gain": 0.25
+    },
+    {
+      "t": 12.8,
+      "type": "swoosh",
+      "gain": 0.45
+    },
+    {
+      "t": 12.82,
+      "type": "thump",
+      "gain": 0.6
+    },
+    {
+      "t": 13.78,
+      "type": "whoosh",
+      "gain": 0.5,
+      "dur": 0.4,
+      "lo": 600,
+      "hi": 7000,
+      "dir": "left"
+    },
+    {
+      "t": 14.05,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 14.179,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 14.3081,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 14.3726,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 14.5016,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 14.6306,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 14.85,
+      "type": "whoosh",
+      "gain": 0.3,
+      "dur": 0.4
+    },
+    {
+      "t": 15.64,
+      "type": "chime",
+      "gain": 0.16
+    },
+    {
+      "t": 15.78,
+      "type": "chime",
+      "gain": 0.16
+    },
+    {
+      "t": 15.85,
+      "type": "swoosh",
+      "gain": 0.35
+    },
+    {
+      "t": 15.9,
+      "type": "tick",
+      "gain": 0.35,
+      "pitch": 1
+    },
+    {
+      "t": 16.4,
+      "type": "tick",
+      "gain": 0.35,
+      "pitch": 0.96
+    },
+    {
+      "t": 16.9,
+      "type": "tick",
+      "gain": 0.35,
+      "pitch": 0.92
+    },
+    {
+      "t": 17.4,
+      "type": "tick",
+      "gain": 0.35,
+      "pitch": 0.88
+    },
+    {
+      "t": 17.95,
+      "type": "toggle",
+      "gain": 0.3
+    },
+    {
+      "t": 19,
+      "type": "chime",
+      "gain": 0.12,
+      "pitch": 0.75
+    },
+    {
+      "t": 19,
+      "type": "shimmer",
+      "gain": 0.07
+    },
+    {
+      "t": 19.38,
+      "type": "click",
+      "gain": 0.4
+    },
+    {
+      "t": 20,
+      "type": "riser",
+      "dur": 0.6,
+      "gain": 0.25
+    },
+    {
+      "t": 20,
+      "type": "impact",
+      "gain": 0.8
+    },
+    {
+      "t": 20.02,
+      "type": "swoosh",
+      "gain": 0.4
+    },
+    {
+      "t": 22.0133,
+      "type": "impact",
+      "gain": 0.65
+    },
+    {
+      "t": 22.0633,
+      "type": "chime",
+      "gain": 0.14
+    },
+    {
+      "t": 22.17,
+      "type": "tick",
+      "gain": 0.35
+    },
+    {
+      "t": 22.6,
+      "type": "whoosh",
+      "gain": 0.4,
+      "dur": 0.5
+    },
+    {
+      "t": 23.57,
+      "type": "click"
+    },
+    {
+      "t": 23.6,
+      "type": "pop",
+      "gain": 0.25
+    },
+    {
+      "t": 24.95,
+      "type": "whoosh",
+      "gain": 0.45,
+      "dur": 0.7
+    },
+    {
+      "t": 25.05,
+      "type": "tick",
+      "gain": 0.2,
+      "pitch": 1
+    },
+    {
+      "t": 25.12,
+      "type": "tick",
+      "gain": 0.2,
+      "pitch": 1.07
+    },
+    {
+      "t": 25.19,
+      "type": "tick",
+      "gain": 0.2,
+      "pitch": 1.1400000000000001
+    },
+    {
+      "t": 25.26,
+      "type": "tick",
+      "gain": 0.2,
+      "pitch": 1.21
+    },
+    {
+      "t": 25.33,
+      "type": "tick",
+      "gain": 0.2,
+      "pitch": 1.28
+    },
+    {
+      "t": 25.4,
+      "type": "tick",
+      "gain": 0.2,
+      "pitch": 1.35
+    },
+    {
+      "t": 25.47,
+      "type": "tick",
+      "gain": 0.2,
+      "pitch": 1.42
+    },
+    {
+      "t": 27,
+      "type": "suck",
+      "dur": 0.7,
+      "gain": 0.45
+    },
+    {
+      "t": 27,
+      "type": "impact",
+      "gain": 1
+    },
+    {
+      "t": 27.45,
+      "type": "tick",
+      "gain": 0.25
+    },
+    {
+      "t": 28.65,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 28.725,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 28.8,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 28.875,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 28.95,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 29.025,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 29.1,
+      "type": "key",
+      "gain": 0.25
+    },
+    {
+      "t": 29.15,
+      "type": "swoosh",
+      "gain": 0.25
+    },
+    {
+      "t": 29.175,
+      "type": "key",
+      "gain": 0.25
+    }
+  ],
+  "scenes": [
+    {
+      "name": "hook",
+      "start": 0,
+      "end": 4.2
+    },
+    {
+      "name": "arena",
+      "start": 4.4,
+      "end": 10.05
+    },
+    {
+      "name": "room",
+      "start": 9.85,
+      "end": 14.1
+    },
+    {
+      "name": "scramble",
+      "start": 13.85,
+      "end": 16.15
+    },
+    {
+      "name": "timer",
+      "start": 15.8,
+      "end": 24.5
+    },
+    {
+      "name": "desk",
+      "start": 22.5,
+      "end": 24.75
+    },
+    {
+      "name": "streamkit",
+      "start": 24.3,
+      "end": 26.9
+    },
+    {
+      "name": "logo",
+      "start": 26.6,
+      "end": 30.01
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "bpm": 120,
+  "duration": 10,
+  "key": "D",
+  "scale": "dorian",
+  "progression": [1, 4, 6, 5],
+  "style": "pulse",
+  "drop": 4.0,
+  "outro": 8.0,
+  "gain": { "music": 0.7, "sfx": 1.0 },
+  "sfx": []
+}

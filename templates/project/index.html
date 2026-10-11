@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{SLUG}}</title>
+<!-- Fonts: use the brand's real typefaces (brands/<slug>/brand.md). Self-host in assets/ when possible. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=block" rel="stylesheet">
+<style>
+  /* ---- design tokens: copy from brand.md / style-guide.md, never invent defaults ---- */
+  :root {
+    --bg: #0e0e10;
+    --ink: #f4f3ef;
+    --muted: #8b8a86;
+    --accent: #ff5b2e;
+    --surface: #1a1a1d;
+    --line: rgba(255,255,255,.08);
+    --display: 'Inter Tight', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --u: calc(var(--H) / 1080);           /* 1 unit = 1px at 1080p height; scales across formats */
+  }
+  [data-format="9x16"] { --u: calc(var(--W) / 1080); }
+  #stage { font-family: var(--display); color: var(--ink); background: var(--bg); }
+  .layer { position: absolute; inset: 0; }
+  .center { display: grid; place-items: center; }
+  .title { font-size: calc(140 * var(--u)); font-weight: 800; letter-spacing: -0.045em; line-height: .92; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <section id="s-hook" class="layer center"><h1 class="title" id="hook">Replace me</h1></section>
+  <section id="s-end" class="layer center"><div class="title" id="logo">Logo</div></section>
+</div>
+
+<script src="/engine/runtime.js"></script>
+<script src="/engine/kit.js"></script>
+<script>
+  // 1) contract: duration, fps, formats — must match brief.md
+  M.comp({ duration: {{DURATION}}, fps: 60, formats: {{FORMATS}}, bg: 'var(--bg)', bpm: 120 });
+  M.loadBeats();             // audio/beats.json once `npm run score -- --beats-only` has run
+
+  // 2) scenes — one per shot in shotlist.md. Times should land on beats: M.beat(n) / M.bar(n)
+  const hook = M.split('#hook');
+  M.scene('hook', 0, M.bar(3), (p, lt, t) => {
+    K.textIn(hook, t, 0.2, { style: 'rise', each: 0.03 });
+    K.textOut(hook, t, M.bar(3) - 0.35);
+  }, '#s-hook');
+
+  M.scene('end', M.bar(3), {{DURATION}}, (p, lt, t) => {
+    const t0 = M.bar(3);
+    const s = M.ease.spring(0.35)(M.clamp((t - t0 - 0.1) / 0.8));
+    M.set('#logo', { s: 0.6 + 0.4 * s, o: M.tw(t, t0, t0 + 0.2) });
+  }, '#s-end');
+  M.cue(M.bar(3) + 0.1, 'thump');
+
+  // 3) global layers (grain, camera drift) go in M.on
+  // const grain = K.grain({ opacity: 0.05 }); M.on(t => grain.at(t));
+</script>
+</body>
+</html>

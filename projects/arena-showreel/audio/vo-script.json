@@ -1,0 +1,13 @@
+{
+  "voice": "802e3bc2b27e49c2995d23ef70e6ac89",
+  "model": "s2.1-pro-free",
+  "lines": [
+    { "id": "01", "t": 0.5,  "text": "[confident] Two cubers. One scramble. No excuses." },
+    { "id": "02", "t": 4.0,  "text": "This is Arena, by CubeNation. A speedcubing timer with the battle built in." },
+    { "id": "03", "t": 9.0,  "text": "Create a room. Send each player their link. No account needed." },
+    { "id": "04", "t": 13.0, "text": "Same scramble for both. Fifteen seconds to inspect." },
+    { "id": "05", "t": 17.0, "text": "[excited] Hold until green. Release. Race." },
+    { "id": "06", "t": 20.5, "text": "The host runs the match, and every piece streams straight into OBS." },
+    { "id": "07", "t": 25.5, "text": "[excited] Arena. Race friends face to face." }
+  ]
+}

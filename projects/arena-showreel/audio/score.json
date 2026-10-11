@@ -1,0 +1,21 @@
+{
+  "bpm": 120,
+  "duration": 30,
+  "key": "A",
+  "scale": "minor",
+  "progression": [1, 6, 3, 7],
+  "style": "pulse",
+  "offset": 0,
+  "drop": 4.0,
+  "seed": 11,
+  "gain": { "music": 0.6, "sfx": 0.95 },
+  "sections": [
+    { "from": 0,  "to": 4,  "layers": ["pad", "hat", "sub"] },
+    { "from": 4,  "to": 18, "layers": ["kick", "hat", "bass", "pad", "arp"] },
+    { "from": 18, "to": 20, "layers": ["pad", "sub"] },
+    { "from": 20, "to": 26, "layers": ["kick", "clap", "hat", "ohat", "bass", "arp", "stab", "pad"] },
+    { "from": 26, "to": 28, "layers": ["pad"] },
+    { "from": 28, "to": 30, "layers": ["ring"] }
+  ],
+  "sfx": []
+}

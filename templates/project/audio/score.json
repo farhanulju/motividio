@@ -1,0 +1,11 @@
+{
+  "bpm": 120,
+  "duration": {{DURATION}},
+  "key": "A",
+  "scale": "minor",
+  "progression": [1, 6, 3, 7],
+  "style": "pulse",
+  "offset": 0,
+  "gain": { "music": 0.75, "sfx": 1.0 },
+  "sfx": []
+}

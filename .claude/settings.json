@@ -1,0 +1,13 @@
+{
+  "enabledMcpjsonServers": ["fish-audio"],
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(node engine/*)",
+      "Bash(ffmpeg *)",
+      "Bash(ffprobe *)",
+      "Bash(yt-dlp *)",
+      "Bash(npx playwright *)"
+    ]
+  }
+}

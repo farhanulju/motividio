@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>_demo — Motividio ident</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=block" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f1ede4;
+    --ink: #141311;
+    --accent: #ff4a1c;
+    --muted: #8d877b;
+    --line: rgba(20,19,17,.10);
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'Inter Tight', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --u: calc(var(--H) / 1080);
+  }
+  [data-format="9x16"] { --u: calc(var(--W) / 1080); }
+  #stage { font-family: var(--sans); color: var(--ink); }
+  #world { position: absolute; inset: 0; transform-origin: 50% 50%; }
+  .dots { position: absolute; inset: -10%; background-image: radial-gradient(var(--line) 1.4px, transparent 1.6px);
+          background-size: calc(36 * var(--u)) calc(36 * var(--u)); }
+
+  #hook { position: absolute; left: 0; right: 0; text-align: center; font-family: var(--serif); font-style: italic;
+          font-size: calc(250 * var(--u)); line-height: .9; letter-spacing: -0.02em; white-space: nowrap; }
+  [data-format="9x16"] #hook { font-size: calc(190 * var(--u)); }
+  #hook .acc { color: var(--accent); }
+
+  #box { position: absolute; background: #fff; overflow: hidden;
+         box-shadow: 0 calc(30 * var(--u)) calc(80 * var(--u)) rgba(20,19,17,.14), 0 0 0 1px rgba(20,19,17,.06); }
+  .pane { position: absolute; inset: 0; }
+
+  /* bar state */
+  #bar { display: flex; align-items: center; gap: calc(18 * var(--u)); padding: 0 calc(14 * var(--u)) 0 calc(40 * var(--u)); }
+  #bar .chev { font-family: var(--mono); color: var(--accent); font-size: calc(34 * var(--u)); }
+  #prompt { flex: 1; font-family: var(--mono); font-size: calc(30 * var(--u)); white-space: nowrap; overflow: hidden; }
+  #go { background: var(--ink); color: var(--paper); border-radius: 999px; font-weight: 600;
+        font-size: calc(26 * var(--u)); padding: calc(18 * var(--u)) calc(34 * var(--u)); }
+
+  /* card state */
+  #card { padding: calc(44 * var(--u)); display: flex; flex-direction: column; gap: calc(26 * var(--u)); }
+  #card header { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono);
+                 font-size: calc(20 * var(--u)); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+  #tiles { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: calc(18 * var(--u)); }
+  [data-format="9x16"] #tiles { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); }
+  .tile { position: relative; border-radius: calc(20 * var(--u)); background: var(--paper); padding: calc(26 * var(--u));
+          display: flex; flex-direction: column; justify-content: space-between; }
+  .tile .n { font-family: var(--mono); font-size: calc(20 * var(--u)); color: var(--muted); }
+  .tile .l { font-family: var(--serif); font-size: calc(64 * var(--u)); line-height: 1; letter-spacing: -0.01em; }
+  #card footer { display: flex; align-items: center; gap: calc(18 * var(--u)); font-family: var(--mono); font-size: calc(24 * var(--u)); }
+  #frames { font-variant-numeric: tabular-nums; font-weight: 500; }
+  #track { flex: 1; height: calc(6 * var(--u)); background: var(--line); border-radius: 9px; overflow: hidden; }
+  #fill { height: 100%; background: var(--ink); transform: scaleX(0); transform-origin: 0 50%; }
+  #checkslot { position: relative; width: calc(44 * var(--u)); height: calc(44 * var(--u)); }
+
+  /* pill / logo state */
+  #pill { display: grid; place-items: center; }
+  #word { font-family: var(--serif); font-size: calc(120 * var(--u)); letter-spacing: -0.02em; line-height: 1; white-space: nowrap; }
+  #word .dot { color: var(--accent); }
+  #tag { position: absolute; left: 0; right: 0; text-align: center; font-family: var(--mono); font-size: calc(28 * var(--u));
+         color: var(--muted); letter-spacing: .02em; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="world">
+    <div class="dots"></div>
+    <div id="hook">One <span class="acc">prompt.</span></div>
+    <div id="box">
+      <div class="pane" id="bar"><span class="chev">›</span><span id="prompt"></span><span id="go">Generate</span></div>
+      <div class="pane" id="card">
+        <header><span>motividio / pipeline</span><span>120 bpm · 60 fps</span></header>
+        <div id="tiles"></div>
+        <footer><span id="frames">0</span><span style="color:var(--muted)">frames</span><div id="track"><div id="fill"></div></div><div id="checkslot"></div></footer>
+      </div>
+      <div class="pane" id="pill"><div id="word">Motividio<span class="dot">.</span></div></div>
+    </div>
+    <div id="tag">Video, made in code.</div>
+  </div>
+</div>
+
+<script src="/engine/runtime.js"></script>
+<script src="/engine/kit.js"></script>
+<script>
+  M.comp({ duration: 10, fps: 60, formats: ['16x9', '9x16'], bg: '#f1ede4', bpm: 120 });
+  M.loadBeats();
+
+  const u = (M.portrait ? M.W : M.H) / 1080;
+  const W = M.W, H = M.H, cx = W / 2, cy = H / 2;
+  const steps = ['Brief', 'Beat grid', 'Build', 'Score', 'Critique', 'Render'];
+  const tilesEl = M.$('#tiles');
+  const tiles = steps.map((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'tile';
+    d.innerHTML = `<span class="n">0${i + 1}</span><span class="l">${s}</span>`;
+    tilesEl.appendChild(d);
+    return d;
+  });
+  const check = K.check({ parent: '#checkslot', size: 44 * u, color: '#141311' });
+  const hookChars = M.split('#hook');
+  const wordChars = M.split('#word');
+  const tagChars = M.split('#tag');
+  const cursor = K.cursor({ size: 40 * u, color: '#141311' });
+  const grain = K.grain({ opacity: 0.05 });
+
+  // geometry of the one container across its three states
+  const bar  = { w: (M.portrait ? 960 : 1040) * u, h: 104 * u, radius: 52 * u };
+  const card = { w: (M.portrait ? 960 : 1360) * u, h: (M.portrait ? 1240 : 760) * u, radius: 36 * u };
+  const pill = { w: 720 * u, h: 200 * u, radius: 100 * u };
+  const at = (s, dy = 0) => ({ x: cx - s.w / 2, y: cy - s.h / 2 + dy, w: s.w, h: s.h, radius: s.radius });
+  const barY = M.portrait ? 120 * u : 150 * u;
+
+  const B = (n) => M.beat(n);            // 0.5s per beat at 120 bpm
+  const T = { type: 0.95, click: 1.95, morph1: B(4), tiles: B(5), drop: B(8), morph2: B(14), logo: B(16) };
+
+  // ---- hook: "One prompt." rises in, then lifts away when the bar becomes the card
+  M.on((t) => {
+    M.$('#hook').style.top = (cy - (M.portrait ? 330 : 300) * u) + 'px';
+    K.textIn(hookChars, t, 0.1, { each: 0.035, dur: 0.6, dist: 70 * u });
+    K.textOut(hookChars, t, T.morph1 - 0.1, { each: 0.02, dur: 0.35, dist: -50 * u });
+  });
+  M.cue(0.12, 'swoosh', { gain: 0.25 });
+
+  // ---- the container: bar → card → pill
+  M.on((t) => {
+    const v = K.morph('#box', t, [
+      [0.55, { ...at(bar, barY), o: 0 }],
+      [0.95, { ...at(bar, barY), o: 1 }, 'snap'],
+      [T.morph1, { ...at(bar, barY), o: 1 }],
+      [T.morph1 + 0.75, { ...at(card), o: 1 }, 'glide'],
+      [T.morph2, { ...at(card), o: 1 }],
+      [T.morph2 + 0.7, { ...at(pill), o: 1 }, 'glide'],
+    ]);
+    // entrance lift for the bar
+    const lift = 1 - M.tw(t, 0.55, 1.0, 'snap');
+    M.$('#box').style.transform += ` translateY(${30 * u * lift}px)`;
+    // content swaps behind a short blur at each morph's midpoint
+    M.set('#bar',  { o: 1, blur: 0 });
+    M.set('#card', { o: 0 });
+    M.set('#pill', { o: 0 });
+    if (t >= T.morph1) K.swap('#bar', '#card', t, T.morph1 + 0.1, 0.4);
+    if (t >= T.morph2) { M.set('#bar', { o: 0 }); K.swap('#card', '#pill', t, T.morph2 + 0.15, 0.4); }
+    // logo beat: pill bumps on the thump
+    if (t >= T.logo) {
+      const b = Math.sin(M.clamp((t - T.logo) / 0.35) * Math.PI) * 0.06;
+      M.$('#box').style.transform += ` scale(${1 + b})`;
+    }
+  });
+
+  // ---- typing + click
+  M.on((t) => {
+    if (t < T.morph1 + 0.5) K.type('#prompt', t, T.type - 0.5, 'a launch film for anything', { cps: 30 });
+    const goX = cx + bar.w / 2 - 110 * u, goY = cy + barY;
+    cursor.at(t, [
+      [0.9, cx + 380 * u, cy + barY + 260 * u],
+      [T.click, goX, goY + 6 * u, { click: true }],
+      [T.morph1 + 0.6, goX + 140 * u, goY + 220 * u],
+    ]);
+    cursor.el.style.opacity = Math.min(+cursor.el.style.opacity, 1 - M.tw(t, T.morph1 + 0.2, T.morph1 + 0.6));
+    const press = Math.abs(t - T.click) < 0.12 ? 0.94 : 1;
+    M.$('#go').style.transform = `scale(${press})`;
+    M.$('#go').style.background = t > T.click ? 'var(--accent)' : 'var(--ink)';
+  });
+
+  // ---- tiles: stagger in, then light up one per beat from the drop
+  tiles.forEach((_, i) => M.cue(T.tiles + i * 0.09 + 0.05, 'pop', { gain: 0.18, pitch: 1 + i * 0.06 }));
+  tiles.forEach((_, i) => M.cue(T.drop + i * 0.5, 'tick', { gain: 0.22, pitch: 1 + i * 0.05 }));
+  M.on((t) => {
+    tiles.forEach((el, i) => {
+      const p = M.stagger(t, T.tiles, i, 0.09, 0.55, 'snap');
+      const s = 0.9 + 0.1 * M.ease.spring(0.35)(M.clamp((t - T.tiles - i * 0.09) / 0.7));
+      M.set(el, { o: M.clamp(p * 2), y: 40 * u * (1 - p), s });
+      const lit = t >= T.drop + i * 0.5;
+      const flash = lit ? 1 - M.tw(t, T.drop + i * 0.5, T.drop + i * 0.5 + 0.5, 'outCubic') : 0;
+      el.style.background = lit ? (i === 5 ? 'var(--accent)' : 'var(--ink)') : 'var(--paper)';
+      el.style.color = lit ? 'var(--paper)' : 'var(--ink)';
+      el.querySelector('.n').style.color = lit ? 'rgba(241,237,228,.6)' : 'var(--muted)';
+      el.style.boxShadow = flash > 0 ? `0 0 0 ${8 * u * flash}px rgba(255,74,28,${0.35 * flash})` : 'none';
+    });
+    K.count('#frames', t, T.drop, T.drop + 2.7, 0, 600, { ease: 'inOutCubic' });
+    K.progress('#fill', t, T.drop, T.drop + 2.7);
+    check.style.left = '0px'; check.style.top = '0px';
+    check.at(t, T.drop + 2.75);
+  });
+
+  // ---- logo
+  M.cue(T.logo, 'thump');
+  M.cue(T.logo - 0.02, 'shimmer', { gain: 0.06, dur: 0.5 });
+  M.on((t) => {
+    K.textIn(wordChars, t, T.morph2 + 0.45, { each: 0.03, dur: 0.55, style: 'blur' });
+    M.$('#tag').style.top = (cy + pill.h / 2 + 50 * u) + 'px';
+    K.textIn(tagChars, t, T.logo + 0.1, { each: 0.018, dur: 0.5, dist: 20 * u });
+    // slow camera push over the whole film + tiny settle on the logo
+    const z = 1 + 0.035 * M.tw(t, 0, 10, 'inOutQuad') + 0.015 * M.tw(t, T.logo, T.logo + 1.2, 'snap');
+    M.$('#world').style.transform = `scale(${z})`;
+    grain.at(t);
+  });
+</script>
+</body>
+</html>

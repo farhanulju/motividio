@@ -1,0 +1,59 @@
+{
+  "url": "https://arena.cubenationshop.com",
+  "pages": {
+    "home": {
+      "title": "Arena by CubeNation",
+      "description": "",
+      "colors": {
+        "backgrounds": [
+          "rgb(14, 17, 22)",
+          "rgb(23, 28, 36)",
+          "rgb(0, 209, 255)",
+          "rgb(9, 15, 18)",
+          "rgb(26, 33, 35)",
+          "rgba(0, 209, 255, 0.1)"
+        ],
+        "text": [
+          "rgb(148, 163, 184)",
+          "rgb(241, 245, 249)",
+          "rgb(0, 209, 255)",
+          "rgb(203, 213, 225)",
+          "rgb(226, 232, 240)"
+        ],
+        "accents": [
+          "rgb(26, 33, 35)",
+          "rgba(0, 209, 255, 0.1)",
+          "rgb(0, 209, 255)"
+        ]
+      },
+      "fonts": [
+        "ui-sans-serif"
+      ],
+      "fontLinks": [],
+      "headings": {
+        "h1": [
+          "Race friends face-to-face."
+        ],
+        "h2": [
+          "Host a match"
+        ]
+      },
+      "ctas": [
+        "Log in",
+        "Join private room",
+        "Refresh",
+        "Host only",
+        "Play · seat 1",
+        "Play · seat 2",
+        "List this room publiclyVisible in Find a room",
+        "Create room"
+      ],
+      "logos": {
+        "imgs": [],
+        "svgs": [],
+        "icons": [],
+        "og": null
+      }
+    }
+  }
+}
