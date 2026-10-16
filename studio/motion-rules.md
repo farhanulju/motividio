@@ -48,4 +48,4 @@ Do instead:
 3. **Style frames**: build the comp, `npm run stills -- <p> --scenes`, Read the contact sheet + key stills. Fix anything generic before animating further.
 4. **Draft**: `npm run stills -- <p> --every 0.25` around transitions to check motion; then `npm run render -- <p> --fast`.
 5. **Critique**: score with `templates/critique.md` (save as `projects/<p>/critique-<n>.md`). Fix the lowest axis first. Repeat until every axis ≥ 8 or 4 rounds, then final render (no `--fast`) for every format.
-6. **Learn**: append what worked / what failed to `studio/learnings.md` so the next film starts smarter.
+6. **Learn** (every project end, no exceptions): fill `learn.json` → `npm run learn -- record projects/<p>` (ledger + reward + learnings line + policy). Fix generic mistakes in the repo itself. From 100 episodes on, `studio/policy.md` is ACTIVE and steers technique choice.

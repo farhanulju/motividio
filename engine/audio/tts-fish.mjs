@@ -5,6 +5,7 @@
  * (create one at https://fish.audio → API keys; the user enters it, never Claude).
  *
  *   node engine/audio/tts-fish.mjs projects/<name>          # reads audio/vo-script.json
+ *   node engine/audio/tts-fish.mjs projects/<name> --only 03,06   # regenerate just those lines
  *   node engine/audio/tts-fish.mjs --text "Hello" --out hello.mp3 [--voice <reference_id>]
  *
  * vo-script.json:
@@ -69,9 +70,14 @@ if (a.text) {
   if (!fs.existsSync(scriptFile)) die(`missing ${scriptFile}`);
   const S = JSON.parse(fs.readFileSync(scriptFile, 'utf8'));
   const vo = [];
+  // --only 03,06 → regenerate just those lines; keep the others' audio + measurements from vo.json
+  const only = a.only ? String(a.only).split(',') : null;
+  const prev = only && fs.existsSync(path.join(A, 'vo.json')) ? JSON.parse(fs.readFileSync(path.join(A, 'vo.json'), 'utf8')) : [];
   for (const [k, line] of S.lines.entries()) {
     const id = line.id || String(k + 1).padStart(2, '0');
     const file = `vo/${id}.mp3`;
+    const old = prev.find((l) => l.id === id);
+    if (only && !only.includes(id) && old) { vo.push({ ...old, t: line.t ?? 0, text: line.text }); continue; }
     await tts({ text: line.text, voice: line.voice || S.voice, model: S.model, speed: line.speed || S.speed || 1, out: path.join(A, file) });
     const dur = ffprobeDuration(path.join(A, file));
     const ph = phrases(path.join(A, file), dur);

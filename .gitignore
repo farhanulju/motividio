@@ -5,3 +5,13 @@ references/*/source.*
 references/*/frames/
 references/*/audio.wav
 projects/*/audio/*.wav
+projects/*/work/
+projects/*/assets/src/
+projects/*/cards/out/
+# private work stays local (this repo is public): only the original examples are tracked
+projects/*
+!projects/_demo/
+!projects/arena-showreel/
+brands/*
+!brands/.gitkeep
+!brands/cubenation-arena/

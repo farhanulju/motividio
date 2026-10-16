@@ -15,6 +15,8 @@ Each round:
 3. **Fix** the lowest 2–3 axes first, concretely (e.g. "hook: replace fade-in title with per-char slam at 0.2s + thump on 1.1"). Don't touch what scores 9+.
 4. **Re-render** `--fast` (or stills only, if the fix was visual) and go again.
 
+Keep the scores in the critique table format (one row per axis, numbers in their own cells) — `npm run learn` parses them as the reward signal.
+
 Stop when all axes ≥ 8, or after 4 rounds (report what's still < 8 and why). Show the user the score table per round as a compact before → after line, e.g. `Rhythm 6→8, Depth 6→8, Hook 7→9`.
 
 Common fixes:

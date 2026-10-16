@@ -42,6 +42,14 @@ export async function mix(dir, o = {}) {
     chains.push(`[${i}:a]${fmt},volume=${o.sfx ?? 1}[sfx]`);
     mixIn.push('[sfx]');
   }
+  // human vocal effects stem (score.mjs → voxfx.wav): sits on top, music ducks lightly under it
+  let vfx = false;
+  if (fs.existsSync(f('voxfx.wav'))) {
+    const i = add(f('voxfx.wav'));
+    chains.push(`[${i}:a]${fmt},volume=${o.voxfx ?? 1},asplit=2[vfx1][vfx2]`);
+    mixIn.push('[vfx2]');
+    vfx = true;
+  }
   if (vo.length) {
     const labels = vo.map((l, k) => {
       const i = add(path.join(A, l.file));
@@ -49,13 +57,20 @@ export async function mix(dir, o = {}) {
       chains.push(`[${i}:a]${fmt},adelay=${ms}|${ms},volume=${(l.gain ?? 1) * (o.vo ?? 1)}[v${k}]`);
       return `[v${k}]`;
     });
-    chains.push(`${labels.join('')}amix=inputs=${labels.length}:normalize=0:dropout_transition=0,asplit=2[vo1][vo2]`);
+    chains.push(`${labels.join('')}amix=inputs=${labels.length}:normalize=0:dropout_transition=0,asplit=2[vo1a][vo2]`);
+    chains.push(vfx ? '[vo1a][vfx1]amix=inputs=2:normalize=0[vo1]' : '[vo1a]anull[vo1]');
     if (chains.some((c) => c.endsWith('[mus]'))) {
-      chains.push('[mus][vo1]sidechaincompress=threshold=0.025:ratio=6:attack=15:release=400[mduck]');
+      chains.push('[mus][vo1]sidechaincompress=threshold=0.02:ratio=8:attack=12:release=350[mduck]');
       mixIn.unshift('[mduck]');
     } else chains.push('[vo1]anullsink');
     mixIn.push('[vo2]');
-  } else if (chains.some((c) => c.endsWith('[mus]'))) mixIn.unshift('[mus]');
+  } else if (vfx && chains.some((c) => c.endsWith('[mus]'))) {
+    chains.push('[mus][vfx1]sidechaincompress=threshold=0.02:ratio=6:attack=10:release=300[mduck]');
+    mixIn.unshift('[mduck]');
+  } else {
+    if (vfx) chains.push('[vfx1]anullsink');
+    if (chains.some((c) => c.endsWith('[mus]'))) mixIn.unshift('[mus]');
+  }
 
   if (!mixIn.length) { console.log('  (no audio stems found — skipped mix)'); return null; }
   const lufs = o.lufs ?? -14;
@@ -72,5 +87,5 @@ export async function mix(dir, o = {}) {
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const a = args();
-  await mix(projectDir(a._[0]), { lufs: a.lufs && +a.lufs, music: a.music, sfx: a.sfx, vo: a.vo, voAt: a['vo-at'] });
+  await mix(projectDir(a._[0]), { lufs: a.lufs && +a.lufs, music: a.music, sfx: a.sfx, vo: a.vo, voxfx: a.voxfx, voAt: a['vo-at'] });
 }

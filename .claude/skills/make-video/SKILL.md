@@ -21,7 +21,11 @@ Extract from the prompt; ask **one** compact question only for what's missing AN
 | References | none (house grammar) |
 | Gates | show brief + beat grid before code, unless user says "just go"/"one shot" |
 
-Read `studio/learnings.md` now. Pick a slug (kebab-case) and run `npm run new -- <slug> --brand <b> --duration <d> --formats <f>`.
+Read `studio/learnings.md` and `studio/policy.md` now. The policy's **preflight checklist** always applies.
+When the policy says **ACTIVE** (≥ 100 recorded films), its technique policy is in force too: default to
+**Prefer** techniques, don't use **Avoid** techniques unless the brief demands it (say so in the brief), and use the
+**Explore next film** technique once where it fits. Open the best episode for this genre as a starting point.
+Pick a slug (kebab-case) and run `npm run new -- <slug> --brand <b> --duration <d> --formats <f>`.
 
 ## 1. Brand kit (if branded)
 If `brands/<b>/brand.md` exists → read it, reuse it. Otherwise run the **brand-kit** skill.
@@ -64,8 +68,27 @@ Run the **score-to-beat** skill: `npm run score -- projects/<slug>` → music + 
 `ffprobe -v error -show_entries format=duration:stream=width,height,codec_name -of compact <file>`.
 Deliver: paths of every MP4, duration/format table, final scores, known weak spots, what to try next.
 
-## 10. Learn
-Append 1–3 lines to `studio/learnings.md`; update `brands/<b>/brand.md` with anything new (better logo file, UI details, tone).
+## 10. Learn — mandatory, every time a project ends
+A project ends when it is delivered, when the user accepts or rejects it, or when work stops on it. Each delivered
+version (v2, v3 …) is its own episode. Never skip this step, even for a quick or abandoned film.
+1. Fill `projects/<slug>/learn.json` (scaffolded by `npm run new`; copy `templates/project/learn.json` if missing):
+   - `genre`, `route`, `techniques` — short kebab-case tags for the choices that shaped the film
+     (`vo-first`, `match-cut`, `clock-motif`, `3d-rigs`, `recorded-sfx` …). Reuse existing tags from `studio/ledger.jsonl`
+     so the stats add up.
+   - `user.verdict` — `accepted` · `accepted-with-changes` · `revised` · `rejected`, from what the user actually said;
+     `user.revisions` = rounds of user feedback; `user.feedback` = their words, short.
+   - `mistakes` — every mistake, including ones you caught yourself: `{tag, what, fix, caught: "self"|"user"}`.
+     Be honest; this is the reward signal.
+   - `repoChanges` — what you changed in the engine/skills/templates/rules so the mistake can't recur
+     (or what *should* change, prefixed `todo:`).
+   - `learning` — one log line: what worked / what failed → rule for next time.
+2. Run `npm run learn -- record projects/<slug>`. It reads the critique scores, computes the reward, appends to
+   `studio/ledger.jsonl`, adds the log line to `studio/learnings.md`, and rebuilds `studio/policy.md`.
+3. Improve the repo, not just the notes: if a mistake is generic, fix it at the source (engine bug, missing kit
+   primitive, skill step, template field). Promote a recurring learning to "Rules distilled" in `studio/learnings.md`,
+   and a universal one to `studio/motion-rules.md`. When the policy is ACTIVE, apply its **promotion candidates**.
+4. Update `brands/<b>/brand.md` with anything new (better logo file, UI details, tone).
+5. Tell the user the reward and the episode count (e.g. "episode 14/100, reward 7.8").
 
 ## Hard rules
 - Never invent a brand's logo, colors, product claims or numbers. Real assets or ask.

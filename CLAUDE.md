@@ -14,7 +14,7 @@ intake → brand kit → reference grammar → director's brief → beat grid ga
 score → critique loop → render → deliver → learn. Sub-skills: `brand-kit`, `reference-style`,
 `voiceover`, `score-to-beat`, `critique-loop`.
 
-Before starting any film, read: `studio/learnings.md` (taste memory) and, if a brand is named,
+Before starting any film, read: `studio/learnings.md` (taste memory), `studio/policy.md` (what the ledger says works) and, if a brand is named,
 `brands/<slug>/brand.md` (brand memory). If that brand file exists, reuse it — don't re-research.
 
 ## The rules (always in force)
@@ -25,9 +25,10 @@ Before starting any film, read: `studio/learnings.md` (taste memory) and, if a b
 |---|---|
 | `engine/runtime.js` | in-page timeline: `M.comp/scene/on/tw/keys/stagger/ease/split/set/cue/beat/video/rand` |
 | `engine/kit.js` | motion primitives: `K.cursor/type/count/draw/check/morph/swap/camera/textIn/textOut/grain/progress/bars` |
+| `engine/cube.js` | `Cube3D` — a real CSS-3D 3×3 Rubik's cube driven by move notation (scramble/invert/jam/pop, lighting) |
 | `engine/*.mjs` | CLI tools (below) |
 | `engine/audio/` | `score.mjs` (music+SFX+beats), `sfx.mjs` (SFX library), `mix.mjs` (ducking + −14 LUFS), `tts-fish.mjs` (Fish Audio REST, s2.1-pro-free) |
-| `studio/` | motion-rules, playbooks (genres), spec-list (component timings), prompt-library, learnings |
+| `studio/` | motion-rules, playbooks (genres), spec-list (component timings), prompt-library, learnings, ledger.jsonl + policy.md (learning loop) |
 | `templates/` | director-brief, shotlist (beat grid), style-guide, brand, critique, project starter |
 | `brands/<slug>/` | brand memory: brand.md, screens/, logos/, extracted.json, characters/ |
 | `references/<slug>/` | reference videos: source.mp4, frames/, sheet-*.jpg, cuts.json, style-guide.md |
@@ -43,8 +44,11 @@ Before starting any film, read: `studio/learnings.md` (taste memory) and, if a b
 | `score projects/<slug> [--beats-only]` | `beats.json`, `music.wav`, `sfx.wav`, `mix.wav` |
 | `mix projects/<slug>` | re-mix after VO changes |
 | `tts projects/<slug>` | Fish Audio REST from `audio/vo-script.json` (needs `FISH_API_KEY` in .env) |
+| `vox projects/<slug>` | human vocal effects (gasps, laughs, crowd) from `audio/vox-script.json` → `audio/vox/`; place with `M.cue(t, 'sample', {file})` (own ducked stem) |
 | `ref <url\|file> --name <slug>` | download + frames + contact sheets + cut detection for a reference |
 | `capture <url> --brand <slug> [--pages /,/pricing] [--mobile]` | brand screenshots, logos, colors, fonts |
+| `learn record projects/<slug>` | end-of-project episode: `learn.json` + critiques → `studio/ledger.jsonl` (reward), learnings log line, rebuilds `studio/policy.md` |
+| `learn stats` / `learn distill` | print the ledger summary / rebuild the policy |
 | `doctor` | toolchain check |
 
 ## Voice — Fish Audio
@@ -58,5 +62,7 @@ Before starting any film, read: `studio/learnings.md` (taste memory) and, if a b
 - Show the user the brief summary and the beat grid before animation code, unless they say "just go" / "one shot it".
 - Always review with your own eyes (Read the contact sheet PNGs) before claiming a render is good.
 - Long jobs: render with `--fast` while iterating; final render without it.
-- After every delivered film, append to `studio/learnings.md`; update `brands/<slug>/brand.md` with anything learned about the brand.
+- Every time a project ends (delivered, accepted, rejected or abandoned), run the make-video **Learn** step: fill `learn.json`, `npm run learn -- record projects/<slug>`, fix generic mistakes at their source in the repo, and update `brands/<slug>/brand.md`.
+- Self-tuning: after 100 recorded episodes `studio/policy.md` turns ACTIVE and its prefer/avoid/explore lists steer every new film (a reward-driven bandit over the studio's own rules — no model training).
+- `projects/` and `brands/` stay local (gitignored, the repo is public). Commit engine, skills, templates and `studio/` only.
 - Report honestly: final scores, known weak spots, and file paths of every deliverable.

@@ -347,9 +347,12 @@
   };
   window.__seek = M.seek;
   // sweep the whole timeline (no paint) so every scene gets to register its cues
+  // heavy renderers (WebGL) check M.sweeping and skip drawing during this pass
   window.__cues = () => {
     const keep = M.t;
+    M.sweeping = true;
     for (let f = 0, n = Math.ceil(M.duration * M.fps); f < n; f++) apply(f / M.fps);
+    M.sweeping = false;
     apply(keep);
     return M._cues.slice().sort((a, b) => a.t - b.t);
   };

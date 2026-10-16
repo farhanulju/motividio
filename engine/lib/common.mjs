@@ -87,19 +87,15 @@ export async function openComp(browser, base, { format, fps, scale = 1, probe } 
   const q = new URLSearchParams({ render: '1' });
   if (format) q.set('format', format);
   if (fps) q.set('fps', fps);
-  // probe to learn the comp size first, then open at that exact viewport
-  let size = probe;
-  if (!size) {
-    const p = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-    attachConsole(p);
-    await p.goto(`${base}?${q}`, { waitUntil: 'load' });
-    size = await p.evaluate(() => window.__ready);
-    await p.close();
-  }
-  const page = await browser.newPage({ viewport: { width: size.width, height: size.height }, deviceScaleFactor: +scale });
+  // the stage is a fixed-size absolute box in render mode, so one load is enough:
+  // open at the probe size (or a guess), learn the comp size, then resize the viewport in place.
+  const guess = probe || { width: 1920, height: 1080 };
+  const page = await browser.newPage({ viewport: { width: guess.width, height: guess.height }, deviceScaleFactor: +scale });
   attachConsole(page);
-  await page.goto(`${base}?${q}`, { waitUntil: 'load' });
+  page.setDefaultTimeout(600000);
+  await page.goto(`${base}?${q}`, { waitUntil: 'load', timeout: 600000 });
   const comp = await page.evaluate(() => window.__ready);
+  if (comp.width !== guess.width || comp.height !== guess.height) await page.setViewportSize({ width: comp.width, height: comp.height });
   return { page, comp };
 }
 

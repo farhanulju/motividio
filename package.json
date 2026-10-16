@@ -14,9 +14,12 @@
     "tts": "node engine/audio/tts-fish.mjs",
     "ref": "node engine/ref.mjs",
     "capture": "node engine/capture.mjs",
-    "doctor": "node engine/doctor.mjs"
+    "doctor": "node engine/doctor.mjs",
+    "vox": "node engine/audio/vox.mjs",
+    "learn": "node engine/learn.mjs"
   },
   "devDependencies": {
-    "playwright": "^1.55.0"
+    "playwright": "^1.55.0",
+    "three": "^0.170.0"
   }
 }

@@ -1,0 +1,15 @@
+{
+  "project": "{{SLUG}}",
+  "version": "v1",
+  "date": "{{DATE}}",
+  "genre": "",
+  "route": "html",
+  "duration": {{DURATION}},
+  "formats": {{FORMATS}},
+  "techniques": [],
+  "rounds": 0,
+  "user": { "verdict": "", "revisions": 0, "feedback": [] },
+  "mistakes": [],
+  "repoChanges": [],
+  "learning": ""
+}

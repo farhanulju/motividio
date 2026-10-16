@@ -14,6 +14,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { args, projectDir } from '../lib/common.mjs';
 import { SR, Bus, SVF, Osc, rng, mtof, reverb, keyRoot, chord } from './dsp.mjs';
 import { renderSfx } from './sfx.mjs';
@@ -63,6 +64,13 @@ fs.writeFileSync(path.join(audioDir, 'beats.json'), JSON.stringify(beatsJson, nu
 console.log(`✔ beats.json — ${bpm} bpm, ${beats.length} beats, ${downbeats.length} bars, ${hits.length} hits`);
 if (a['beats-only']) process.exit(0);
 
+// ---- music: a project composer (audio/<file>.mjs default-exports ctx => Bus) or the built-in arranger ----
+if (S.composer) {
+  const mod = await import(pathToFileURL(path.join(dir, S.composer)).href);
+  const bus = await mod.default({ duration, bpm, spb, bar, offset, S, cues, dir, audioDir, dsp: await import('./dsp.mjs'), renderSfx });
+  bus.writeWav(path.join(audioDir, 'music.wav'));
+  console.log(`✔ music.wav via composer ${S.composer}`);
+} else {
 // ---- arrangement ----
 const sections = S.sections || (() => {
   const L = STYLES[style] || STYLES.pulse;
@@ -196,14 +204,25 @@ if (kicks.length) {
 music.add(reverb(send, { room: 0.86, damp: 0.3 }), 1);
 if (sections.length) music.master(-3).fadeOut(0.04);
 music.writeWav(path.join(audioDir, 'music.wav'));
+}
 
-// ---- SFX ----
+// ---- SFX ---- (sample cues = human vocal effects → their own stem, so the mix can duck music under them)
+const isVox = (c) => c.type === 'sample' && c.duck !== false;
+const sfxCues = cues.filter((c) => !isVox(c)), voxCues = cues.filter(isVox);
 const sfx = new Bus(duration + 0.01);
-renderSfx(sfx, cues);
+renderSfx(sfx, sfxCues, { baseDir: audioDir });
 const sfxSend = reverb(sfx, { room: 0.7, damp: 0.4 });
 sfx.add(sfxSend, 0.35);
-if (cues.length) sfx.master(-2, 1.05).fadeOut(0.02);
+if (sfxCues.length) sfx.master(-2, 1.05).fadeOut(0.02);
 sfx.writeWav(path.join(audioDir, 'sfx.wav'));
-console.log(`✔ music.wav (${style}, ${S.key || 'A'} ${scale}, prog ${prog.join('-')}) + sfx.wav (${cues.length} cues)`);
+const voxFile = path.join(audioDir, 'voxfx.wav');
+if (voxCues.length) {
+  const vb = new Bus(duration + 0.01);
+  renderSfx(vb, voxCues, { baseDir: audioDir });
+  vb.add(reverb(vb, { room: 0.5, damp: 0.5 }), 0.18);
+  vb.master(-1, 1.0).fadeOut(0.02);
+  vb.writeWav(voxFile);
+} else fs.rmSync(voxFile, { force: true });
+console.log(`✔ music.wav (${S.composer || `${style}, ${S.key || 'A'} ${scale}`}) + sfx.wav (${sfxCues.length} cues)${voxCues.length ? ` + voxfx.wav (${voxCues.length} vocal effects)` : ''}`);
 
-if (!a['no-mix']) await mix(dir, { duration, music: S.gain?.music, sfx: S.gain?.sfx });
+if (!a['no-mix']) await mix(dir, { duration, music: S.gain?.music, sfx: S.gain?.sfx, voxfx: S.gain?.voxfx });
