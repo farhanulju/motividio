@@ -3,23 +3,30 @@
  * Grab stills for review without a full render — the feedback loop's eyes.
  *
  *   node engine/stills.mjs projects/<name> [--every 0.5] [--at 1.2,3,4.5] [--scenes]
- *        [--format 9x16] [--cols 6] [--width 480]
+ *        [--format 9x16] [--cols 6] [--width 480] [--allow-errors]
  *
  * Writes out/stills/t<sec>.png plus out/stills/contact.png (a labelled grid of all stills).
  * --scenes grabs the midpoint and last frame of every registered scene.
  * Also refreshes audio/cues.json from the composition's M.cue() calls.
+ * Refuses to run when the comp has missing assets/fonts or page errors (--allow-errors overrides).
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { serve, args, projectDir, urlPath, launch, openComp, run, dumpCues } from './lib/common.mjs';
+import { serve, args, projectDir, urlPath, launch, openComp, run, dumpCues, brief } from './lib/common.mjs';
 
 const a = args();
 const dir = projectDir(a._[0]);
 const server = await serve();
 const base = `http://127.0.0.1:${server.address().port}${urlPath(dir)}`;
 const browser = await launch();
-const { page, comp } = await openComp(browser, base, { format: a.format });
-const { scenes } = await dumpCues(page, dir);
+const bail = async (e) => {
+  console.error('✖ ' + brief(e));
+  await browser.close().catch(() => {});
+  server.close();
+  process.exit(1);
+};
+const { page, comp, errors } = await openComp(browser, base, { format: a.format, allowErrors: !!a['allow-errors'] }).catch(bail);
+const { scenes } = await dumpCues(page, dir).catch(bail);
 
 let times;
 if (a.at) times = String(a.at).split(',').map(Number);
@@ -35,12 +42,15 @@ const out = path.join(dir, 'out', a.format ? `stills-${a.format}` : 'stills');
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 const files = [];
-for (const t of times) {
-  await page.evaluate((x) => window.__seek(x), t);
-  const f = path.join(out, `t${t.toFixed(2).padStart(6, '0')}.png`);
-  await page.screenshot({ path: f, animations: 'allow' });
-  files.push({ f, t });
-}
+try {
+  for (const t of times) {
+    await page.evaluate((x) => window.__seek(x), t);
+    if (errors.length && !a['allow-errors']) throw new Error(`page error while seeking to ${t}s: ${errors[0].detail}`);
+    const f = path.join(out, `t${t.toFixed(2).padStart(6, '0')}.png`);
+    await page.screenshot({ path: f, animations: 'allow' });
+    files.push({ f, t });
+  }
+} catch (e) { await bail(e); }
 await browser.close();
 server.close();
 

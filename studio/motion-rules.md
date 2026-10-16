@@ -8,11 +8,13 @@ They apply to every film unless the brief explicitly overrides a rule (and says 
 - `M.comp({ duration, fps, formats })` is called once, first. Default **60fps**, H.264, yuv420p.
 - All motion is driven by `t` through `M.scene` / `M.on` / `M.tw` / `M.keys` / `K.*`. **Banned:** `Date.now`, `performance.now`, `setTimeout`/`setInterval` for animation, rAF deltas, `Math.random()` (use `M.rand(seed)`), CSS transitions. CSS `@keyframes`/WAAPI are allowed only because the runtime pins `currentTime` to `t` — prefer JS.
 - **Stateless frames:** frames are seeked in any order (parallel workers, scrubbing, the cue sweep). Every property a function animates must be set on every frame it runs — never rely on a value left behind by an earlier/later frame. If `textOut` sets blur, `textIn` must set `blur: 0`.
-- Assets load before frame 0: images in the DOM, `M.wait(promise)` for anything async, fonts with `display=block`. A frame must never render with a fallback font or a missing image.
+- Assets load before frame 0: images in the DOM, `M.wait(promise)` for anything async, fonts with `display=block`. A frame must never render with a fallback font or a missing image. The runtime enforces this: it loads every font the text uses (even in hidden scenes) and the tools refuse to run on any failed image/font/stylesheet/task, unregistered `<video>`, or page error. Accepted exceptions go in `M.comp({ ignore: [...] })`.
+- Eases are checked: an unknown name or a factory passed as an ease (`M.ease.spring`) throws. Use `'spring(0.4)'` / `'bezier(…)'` strings or call the factory.
 - `<video>` inside a comp goes through `M.video(el, start)` so it is frame-seeked, never played.
 - Layout in units of `--u` (1px at 1080p) so formats scale; check every format in `formats` before delivery.
 - Never ship without looking: `npm run stills` before `npm run render`, and read the contact sheet.
-- Renders go to `projects/<slug>/out/`. Never overwrite a delivered file — version it (`-v2`).
+- `npm run verify` before every final render: it catches values leaking between frames, which parallel workers and resume would turn into glitches.
+- Renders go to `projects/<slug>/out/`, versioned automatically (`-v2`, `-v3`…) with a `.json` manifest; drafts go to `out/draft/`. Never pass `--overwrite` on a delivered file.
 
 ## 2. The look — ban the generic
 Every film needs a designed point of view. These are the tells of sloppy AI video; each is banned unless the brief asks for it on purpose:
@@ -47,5 +49,5 @@ Do instead:
 2. **Gate 2 — beat grid**: `shotlist.md` table approved **before writing animation code** (unless the user said "just go").
 3. **Style frames**: build the comp, `npm run stills -- <p> --scenes`, Read the contact sheet + key stills. Fix anything generic before animating further.
 4. **Draft**: `npm run stills -- <p> --every 0.25` around transitions to check motion; then `npm run render -- <p> --fast`.
-5. **Critique**: score with `templates/critique.md` (save as `projects/<p>/critique-<n>.md`). Fix the lowest axis first. Repeat until every axis ≥ 8 or 4 rounds, then final render (no `--fast`) for every format.
+5. **Critique**: score with `templates/critique.md` (save as `projects/<p>/critique-<n>.md`). Fix the lowest axis first. Repeat until every axis ≥ 8 or 4 rounds, then `npm run verify` (each format) and the final render (no `--fast`) for every format.
 6. **Learn** (every project end, no exceptions): fill `learn.json` → `npm run learn -- record projects/<p>` (ledger + reward + learnings line + policy). Fix generic mistakes in the repo itself. From 100 episodes on, `studio/policy.md` is ACTIVE and steers technique choice.

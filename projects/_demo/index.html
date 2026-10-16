@@ -137,9 +137,10 @@
     const lift = 1 - M.tw(t, 0.55, 1.0, 'snap');
     M.$('#box').style.transform += ` translateY(${30 * u * lift}px)`;
     // content swaps behind a short blur at each morph's midpoint
-    M.set('#bar',  { o: 1, blur: 0 });
-    M.set('#card', { o: 0 });
-    M.set('#pill', { o: 0 });
+    // reset everything K.swap touches (opacity, blur, scale), or a later frame's swap leaks back
+    M.set('#bar',  { o: 1, blur: 0, s: 1 });
+    M.set('#card', { o: 0, blur: 0, s: 1 });
+    M.set('#pill', { o: 0, blur: 0, s: 1 });
     if (t >= T.morph1) K.swap('#bar', '#card', t, T.morph1 + 0.1, 0.4);
     if (t >= T.morph2) { M.set('#bar', { o: 0 }); K.swap('#card', '#pill', t, T.morph2 + 0.15, 0.4); }
     // logo beat: pill bumps on the thump

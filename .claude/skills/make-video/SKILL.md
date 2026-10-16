@@ -61,11 +61,15 @@ Edit `projects/<slug>/index.html`:
 Run the **score-to-beat** skill: `npm run score -- projects/<slug>` → music + SFX from cues + mix.wav (with VO ducking if `audio/vo.json` exists).
 
 ## 8. Draft render + critique loop
-`npm run render -- projects/<slug> --fast` → run the **critique-loop** skill (≥ 2 rounds, stop at all axes ≥ 8 or round 4).
+`npm run render -- projects/<slug> --fast` (→ `out/draft/`) → run the **critique-loop** skill (≥ 2 rounds, stop at all axes ≥ 8 or round 4).
+If a tool refuses with a problem list (missing image/font/stylesheet, page error), fix the cause; don't reach for `--allow-errors`.
 
 ## 9. Final
-`npm run render -- projects/<slug> --format all` (no `--fast`). Verify each file with
-`ffprobe -v error -show_entries format=duration:stream=width,height,codec_name -of compact <file>`.
+`npm run verify -- projects/<slug>` (and `--format 9x16` etc. for each extra format) must pass — fix any frame it
+flags (usually a property one function sets and nothing resets), then `npm run render -- projects/<slug> --format all`
+(no `--fast`). Each MP4 gets a manifest beside it (`out/<name>[-vN].json`): check its `warnings` (frame count,
+loudness off −14 LUFS, true peak above −1 dBTP) and fix them before delivering. Outputs are versioned automatically —
+report the exact file names. If a render is interrupted, re-run the same command: it resumes.
 Deliver: paths of every MP4, duration/format table, final scores, known weak spots, what to try next.
 
 ## 10. Learn — mandatory, every time a project ends

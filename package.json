@@ -16,7 +16,8 @@
     "capture": "node engine/capture.mjs",
     "doctor": "node engine/doctor.mjs",
     "vox": "node engine/audio/vox.mjs",
-    "learn": "node engine/learn.mjs"
+    "learn": "node engine/learn.mjs",
+    "verify": "node engine/verify.mjs"
   },
   "devDependencies": {
     "playwright": "^1.55.0",

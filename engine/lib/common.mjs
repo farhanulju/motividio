@@ -1,5 +1,6 @@
 // Shared helpers for engine scripts: static server, page loading, arg parsing, ffmpeg.
 import http from 'node:http';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
@@ -67,6 +68,13 @@ export function projectDir(arg) {
 
 export const urlPath = (dir) => '/' + path.relative(ROOT, dir).split(path.sep).join('/') + '/';
 
+/** an error for humans: drop Playwright's "page.evaluate:" prefix and all but the first stack line */
+export function brief(e) {
+  const lines = String(e?.message ?? e).replace(/^\w+\.\w+: (Error: )?/, '').split(/\r?\n/);
+  const stack = lines.filter((l) => /^\s+at /.test(l));
+  return [...lines.filter((l) => !/^\s+at /.test(l)), ...stack.slice(0, 1)].join('\n');
+}
+
 export function die(msg) {
   console.error('✖ ' + msg);
   process.exit(1);
@@ -82,8 +90,22 @@ export async function launch() {
   return chromium.launch({ args: ['--disable-web-security', '--autoplay-policy=no-user-gesture-required', '--font-render-hinting=none'] });
 }
 
-/** open a composition in render mode and wait until it is ready; returns { page, comp } */
-export async function openComp(browser, base, { format, fps, scale = 1, probe } = {}) {
+/** A composition that can't render correctly: missing assets/fonts, page errors. Message lists every problem. */
+export class CompError extends Error {
+  constructor(problems) {
+    super(`composition has ${problems.length} problem(s) — fix them, or pass --allow-errors to render anyway:\n` +
+      problems.map((p) => `    · [${p.kind}] ${p.detail}`).join('\n'));
+    this.problems = problems;
+  }
+}
+
+/**
+ * Open a composition in render mode and wait until it is ready; returns { page, comp, errors }.
+ * Fails loud: missing images/fonts/stylesheets, rejected M.wait() tasks, page errors, console errors and
+ * failed asset requests throw a CompError unless allowErrors. `errors` stays live — callers check it
+ * after each frame, because a script error mid-render must stop the render too.
+ */
+export async function openComp(browser, base, { format, fps, scale = 1, probe, allowErrors = false } = {}) {
   const q = new URLSearchParams({ render: '1' });
   if (format) q.set('format', format);
   if (fps) q.set('fps', fps);
@@ -91,17 +113,106 @@ export async function openComp(browser, base, { format, fps, scale = 1, probe } 
   // open at the probe size (or a guess), learn the comp size, then resize the viewport in place.
   const guess = probe || { width: 1920, height: 1080 };
   const page = await browser.newPage({ viewport: { width: guess.width, height: guess.height }, deviceScaleFactor: +scale });
-  attachConsole(page);
+  const errors = watchErrors(page);
   page.setDefaultTimeout(600000);
   await page.goto(`${base}?${q}`, { waitUntil: 'load', timeout: 600000 });
   const comp = await page.evaluate(() => window.__ready);
   if (comp.width !== guess.width || comp.height !== guess.height) await page.setViewportSize({ width: comp.width, height: comp.height });
-  return { page, comp };
+  const ignored = (p) => (comp.ignore || []).some((s) => p.detail.includes(s));
+  const problems = dedupe([...(comp.problems || []), ...errors]).filter((p) => !ignored(p));
+  if (comp.ignore?.length) { // keep ignoring them while frames render, too
+    const push = errors.push.bind(errors);
+    errors.push = (...ps) => push(...ps.filter((p) => !ignored(p)));
+  }
+  if (problems.length && !allowErrors) { await page.close(); throw new CompError(problems); }
+  if (problems.length && !probe) console.warn(`  ⚠ --allow-errors: ignoring ${problems.length} problem(s)`);
+  errors.length = 0; // from here on, errors = what happened while seeking
+  return { page, comp, errors };
 }
 
-function attachConsole(page) {
-  page.on('pageerror', (e) => console.error('  [page error]', e.message));
-  page.on('console', (m) => { if (m.type() === 'error') console.error('  [console]', m.text()); });
+/** one line per problem: a failed request already named by a runtime problem, or a repeat, is dropped */
+function dedupe(problems) {
+  const named = problems.filter((p) => p.kind !== 'request' && p.kind !== 'page error').map((p) => p.detail).join(' | ');
+  const keys = new Set();
+  return problems.filter((p) => {
+    const url = p.kind === 'request' ? p.detail.split(' ')[1] : null;
+    if ((url && named.includes(url)) || (p.kind === 'page error' && named.includes(p.detail))) return false;
+    const k = url || `${p.kind}|${p.detail}`;
+    if (keys.has(k)) return false;
+    keys.add(k);
+    return true;
+  });
+}
+
+const ASSET_TYPES = new Set(['image', 'font', 'stylesheet', 'script', 'media']);
+function watchErrors(page) {
+  const errors = [];
+  page.on('pageerror', (e) => { errors.push({ kind: 'page error', detail: e.message }); console.error('  [page error]', e.message); });
+  // "Failed to load resource" duplicates the response check below, and also fires for optional fetches
+  page.on('console', (m) => {
+    if (m.type() === 'error' && !/^Failed to load resource/.test(m.text())) errors.push({ kind: 'console', detail: m.text() });
+  });
+  // fetch/xhr failures are left to the page (M.loadBeats falls back on purpose); asset loads must succeed
+  page.on('requestfailed', (r) => {
+    if (ASSET_TYPES.has(r.resourceType())) errors.push({ kind: 'request', detail: `${r.resourceType()} ${r.url()} — ${r.failure()?.errorText}` });
+  });
+  page.on('response', (r) => {
+    const req = r.request();
+    if (r.status() >= 400 && ASSET_TYPES.has(req.resourceType()) && !/favicon\.ico$/.test(r.url())) {
+      errors.push({ kind: 'request', detail: `${req.resourceType()} ${r.url()} — HTTP ${r.status()}` });
+    }
+  });
+  return errors;
+}
+
+/**
+ * sha256 of a project's inputs (everything but out/ and work/) — identifies "the same film" for resume + manifests.
+ * media: false leaves out audio/*.wav|mp3… so re-mixing doesn't invalidate rendered video chunks
+ * (beats.json / vo.json still count: comps read them for timing).
+ */
+export function hashTree(dir, { skip = ['out', 'work', 'node_modules', '.git'], media = true } = {}) {
+  const h = crypto.createHash('sha256');
+  const walk = (d) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true }).sort((x, y) => (x.name < y.name ? -1 : 1))) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) { if (!skip.includes(e.name) && !e.name.startsWith('.')) walk(p); continue; }
+      if (/\.md$|^learn\.json$|^cues\.json$/.test(e.name)) continue; // notes and generated cue dumps don't change frames
+      const rel = path.relative(dir, p).split(path.sep).join('/');
+      if (!media && /^audio\/.*\.(wav|mp3|ogg|m4a|flac|aac)$/i.test(rel)) continue;
+      const st = fs.statSync(p);
+      h.update(rel);
+      // hash content; huge files (3D models, source footage) by size + mtime to keep it fast
+      if (st.size > 64 * 1024 * 1024) h.update(`${st.size}:${st.mtimeMs}`);
+      else h.update(fs.readFileSync(p));
+    }
+  };
+  walk(dir);
+  return h.digest('hex');
+}
+
+/** sha256 of the in-page engine (what decides how frames look) */
+export function engineHash() {
+  const h = crypto.createHash('sha256');
+  for (const f of ['runtime.js', 'kit.js', 'cube.js']) {
+    const p = path.join(ROOT, 'engine', f);
+    if (fs.existsSync(p)) h.update(fs.readFileSync(p));
+  }
+  return h.digest('hex');
+}
+
+export function gitInfo() {
+  const g = (...argv) => spawnSync('git', ['-C', ROOT, ...argv], { encoding: 'utf8' }).stdout?.trim() || null;
+  return { commit: g('rev-parse', 'HEAD'), engineDirty: !!g('status', '--porcelain', '--', 'engine') };
+}
+
+/** next free path: file.mp4, then file-v2.mp4, file-v3.mp4 … (delivered renders are never overwritten) */
+export function nextVersion(file) {
+  if (!fs.existsSync(file)) return file;
+  const { dir, name, ext } = path.parse(file);
+  for (let v = 2; ; v++) {
+    const f = path.join(dir, `${name}-v${v}${ext}`);
+    if (!fs.existsSync(f)) return f;
+  }
 }
 
 export function hasBin(bin) {

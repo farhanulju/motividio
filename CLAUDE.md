@@ -40,7 +40,8 @@ Before starting any film, read: `studio/learnings.md` (taste memory), `studio/po
 | `new <slug> [--brand b --duration 15 --formats 16x9,9x16]` | scaffold a project |
 | `preview [projects/<slug>]` | live player at http://127.0.0.1:4321/projects/<slug>/ (space, ←/→, scrub, `?format=9x16`) — for the user's own browser |
 | `stills projects/<slug> [--every 0.5 \| --at 1,2.5 \| --scenes] [--format 9x16]` | PNG stills + `contact.png`; also refreshes `audio/cues.json`. **Read these images to review.** |
-| `render projects/<slug> [--format all] [--fast] [--from a --to b] [--workers 4]` | final MP4(s) in `out/` (muxes `audio/mix.wav` if present) |
+| `render projects/<slug> [--format all] [--fast] [--from a --to b] [--workers 4] [--fresh] [--overwrite]` | final MP4(s) in `out/`, never overwritten (next free `-v2`, `-v3`…) + a `.json` manifest (input hashes, settings, versions, ffprobe, loudness); `--fast` or a range → `out/draft/`. Muxes `audio/mix.wav`. Chunked: an interrupted/crashed render resumes when re-run |
+| `verify projects/<slug> [--format 9x16] [--samples 30]` | stateless check: frames must match whether seeked in order or shuffled with random jumps; A/B/diff PNGs in `out/verify/` on failure |
 | `score projects/<slug> [--beats-only]` | `beats.json`, `music.wav`, `sfx.wav`, `mix.wav` |
 | `mix projects/<slug>` | re-mix after VO changes |
 | `tts projects/<slug>` | Fish Audio REST from `audio/vo-script.json` (needs `FISH_API_KEY` in .env) |
@@ -61,7 +62,8 @@ Before starting any film, read: `studio/learnings.md` (taste memory), `studio/po
 ## Working agreements
 - Show the user the brief summary and the beat grid before animation code, unless they say "just go" / "one shot it".
 - Always review with your own eyes (Read the contact sheet PNGs) before claiming a render is good.
-- Long jobs: render with `--fast` while iterating; final render without it.
+- Long jobs: render with `--fast` while iterating; `npm run verify` must pass before the final render (no `--fast`).
+- `stills`/`render`/`verify` refuse a comp with missing images, fonts, stylesheets or page errors. Fix the cause; for a load problem the film accepts on purpose, list it in `M.comp({ ignore: ['substring'] })` rather than using `--allow-errors`.
 - Every time a project ends (delivered, accepted, rejected or abandoned), run the make-video **Learn** step: fill `learn.json`, `npm run learn -- record projects/<slug>`, fix generic mistakes at their source in the repo, and update `brands/<slug>/brand.md`.
 - Self-tuning: after 100 recorded episodes `studio/policy.md` turns ACTIVE and its prefer/avoid/explore lists steer every new film (a reward-driven bandit over the studio's own rules — no model training).
 - `projects/` and `brands/` stay local (gitignored, the repo is public). Commit engine, skills, templates and `studio/` only.

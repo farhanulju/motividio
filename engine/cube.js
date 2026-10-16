@@ -126,7 +126,7 @@
        * play moves up to progress k. opts: { ease, jam: {move, amount}, explode: 0..1, popped: {index, x,y,z,rx,ry} }
        */
       play(moves, k = 0, opts = {}) {
-        const ease = M.ease[opts.ease || 'inOutQuad'] || opts.ease;
+        const ease = M.easeFn(opts.ease || 'inOutQuad');
         const state = cubies.map((c) => ({ p: c.home.slice(), R: ID }));
         const nFull = Math.max(0, Math.min(moves.length, Math.floor(k)));
         const apply = (m, frac) => {

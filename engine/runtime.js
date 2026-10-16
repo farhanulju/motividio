@@ -33,7 +33,13 @@
     t: 0, RENDER, FORMATS,
     W: 1920, H: 1080, fps: 60, duration: 10, format: '16x9', portrait: false,
     beats: null,
-    _on: [], _scenes: [], _videos: [], _tasks: [], _cues: [],
+    _on: [], _scenes: [], _videos: [], _tasks: [], _cues: [], _problems: [],
+    frame: 0, // increments on every applied frame — lets kit functions know what already ran this frame
+  };
+  /** record a load problem (missing image/font/stylesheet, failed task). Render tools refuse to run with any. */
+  const problem = (kind, detail) => {
+    M._problems.push({ kind, detail });
+    console.warn(`[motividio] ${kind}: ${detail}`);
   };
 
   // ---------- math ----------
@@ -121,7 +127,26 @@
     bezier,
     spring,
   };
-  const E = (e) => (typeof e === 'function' ? e : M.ease[e || 'snap'] || M.ease.snap);
+  // Resolve an ease loudly: a typo or a factory passed as an ease must fail, not silently become snap/NaN.
+  // Strings may call the factories: 'spring(0.4)', 'bezier(0.2,0,0,1)'.
+  const easeCache = new Map();
+  const E = (e) => {
+    if (e === undefined || e === null) return M.ease.snap;
+    if (typeof e === 'function') {
+      if (e === spring || e === bezier) throw new Error(`ease: M.ease.${e === spring ? 'spring' : 'bezier'} is a factory — call it, e.g. M.ease.spring(0.4), or pass 'spring(0.4)'`);
+      return e;
+    }
+    let f = easeCache.get(e);
+    if (f) return f;
+    const call = /^(spring|bezier)\(([^)]*)\)$/.exec(String(e).replace(/\s+/g, ''));
+    if (call) f = (call[1] === 'spring' ? spring : bezier)(...(call[2] ? call[2].split(',').map(Number) : []));
+    else if (e === 'spring') f = spring(0.3);
+    else if (M.ease[e] && e !== 'bezier') f = M.ease[e];
+    else throw new Error(`ease: unknown "${e}" — use one of ${Object.keys(M.ease).filter((k) => k !== 'bezier' && k !== 'spring').join(', ')}, 'spring(0.4)' or 'bezier(x1,y1,x2,y2)'`);
+    easeCache.set(e, f);
+    return f;
+  };
+  M.easeFn = E;
 
   /** eased 0..1 progress of t across [t0, t1] */
   M.tw = (t, t0, t1, ease) => E(ease)(clamp((t - t0) / (t1 - t0 || 1e-9)));
@@ -270,7 +295,9 @@
     document.documentElement.dataset.format = fmt;
     document.documentElement.style.setProperty('--W', M.W + 'px');
     document.documentElement.style.setProperty('--H', M.H + 'px');
-    window.__comp = { width: M.W, height: M.H, fps: M.fps, duration: M.duration, format: fmt, formats: o.formats };
+    // ignore: substrings of load problems this film accepts on purpose (e.g. a texture a 3D model
+    // references but never needs) — narrower than --allow-errors, and recorded in the comp itself
+    window.__comp = { width: M.W, height: M.H, fps: M.fps, duration: M.duration, format: fmt, formats: o.formats, ignore: o.ignore || [] };
     return M;
   };
   M.stage = () => stage;
@@ -294,7 +321,11 @@
     el = M.$(el);
     el.muted = true; el.playsInline = true; el.preload = 'auto'; el.pause();
     M._videos.push({ el, start, rate });
-    M.wait(new Promise((r) => (el.readyState >= 2 ? r() : el.addEventListener('loadeddata', r, { once: true }))));
+    M.wait(new Promise((r, j) => {
+      if (el.readyState >= 2) return r();
+      el.addEventListener('loadeddata', r, { once: true });
+      el.addEventListener('error', () => j(new Error(`video failed to load: ${el.currentSrc || el.src}`)), { once: true });
+    }));
     return el;
   };
 
@@ -317,6 +348,7 @@
   // ---------- seek ----------
   function apply(t) {
     M.t = t;
+    M.frame++;
     for (const s of M._scenes) {
       const active = t >= s.start && t < s.end;
       // display (not visibility): children that set visibility:visible would leak through a hidden parent
@@ -351,23 +383,114 @@
   window.__cues = () => {
     const keep = M.t;
     M.sweeping = true;
-    for (let f = 0, n = Math.ceil(M.duration * M.fps); f < n; f++) apply(f / M.fps);
+    for (let f = 0, n = Math.ceil(M.duration * M.fps); f < n; f++) {
+      try { apply(f / M.fps); } catch (e) {
+        M.sweeping = false;
+        e.message = `at ${(f / M.fps).toFixed(3)}s (frame ${f}): ${e.message}`;
+        throw e;
+      }
+    }
     M.sweeping = false;
     apply(keep);
     return M._cues.slice().sort((a, b) => a.t - b.t);
   };
   window.__scenes = () => M._scenes.map(({ name, start, end }) => ({ name, start, end }));
 
+  // ---------- boot: every asset loaded before frame 0, every failure recorded ----------
+  const preload = (url, what) => new Promise((r) => {
+    const im = new Image();
+    im.onload = r;
+    im.onerror = () => { problem('image', `${what} failed to load: ${url}`); r(); };
+    im.src = url;
+  });
+  async function settleTasks() {
+    // tasks can add tasks (a fetch that then loads images), so drain until nothing new arrives
+    for (let n = 0; n < M._tasks.length;) {
+      const batch = M._tasks.slice(n);
+      n = M._tasks.length;
+      for (const r of await Promise.allSettled(batch)) {
+        if (r.status === 'rejected') problem('task', `M.wait() rejected: ${r.reason?.message || r.reason}`);
+      }
+    }
+  }
+  async function loadFonts() {
+    // Fonts used only in hidden scenes never load on their own, so a later scene would render in a
+    // fallback font (or swap mid-render). Load every face the document's text needs, now.
+    const combos = new Map();
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const n = walker.currentNode, txt = n.textContent.trim(), el = n.parentElement;
+      if (!txt || !el || el.closest('script,style,noscript')) continue;
+      const cs = getComputedStyle(el);
+      const key = `${cs.fontStyle} ${cs.fontWeight} 16px ${cs.fontFamily}`;
+      if (!combos.has(key)) combos.set(key, { family: cs.fontFamily, text: new Set() });
+      for (const ch of txt) combos.get(key).text.add(ch);
+    }
+    await Promise.allSettled([...combos].map(([font, c]) => document.fonts.load(font, [...c.text].join(''))));
+    await document.fonts.ready;
+    const declared = new Map();
+    for (const f of document.fonts) {
+      const fam = f.family.replace(/["']/g, '');
+      if (!declared.has(fam)) declared.set(fam, []);
+      declared.get(fam).push(f);
+      if (f.status === 'error') problem('font', `${fam} ${f.weight} ${f.style} failed to load`);
+    }
+    const GENERIC = /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-[a-z-]+|emoji|math|fangsong)$/i;
+    const seen = new Set();
+    for (const c of combos.values()) {
+      const first = c.family.split(',')[0].trim().replace(/["']/g, '');
+      if (GENERIC.test(first) || seen.has(first)) continue;
+      seen.add(first);
+      const faces = declared.get(first);
+      if (!faces) problem('font', `"${first}" has no @font-face — its text would render in a fallback font`);
+      else if (!faces.some((f) => f.status === 'loaded')) problem('font', `"${first}" never loaded`);
+    }
+  }
+  async function loadImages() {
+    for (const link of document.querySelectorAll('link[rel="stylesheet"]')) {
+      if (!link.sheet) problem('stylesheet', `failed to load: ${link.href}`);
+    }
+    const imgs = [...document.images];
+    for (const img of imgs) img.loading = 'eager'; // lazy images in hidden scenes would never load
+    await Promise.all(imgs.map((img) => (img.complete ? 0 : new Promise((r) => {
+      img.addEventListener('load', r, { once: true });
+      img.addEventListener('error', r, { once: true });
+    }))));
+    for (const img of imgs) {
+      if (img.currentSrc && img.naturalWidth === 0) problem('image', `<img> failed to load: ${img.currentSrc}`);
+    }
+    // CSS images and SVG <image>: preloading also warms the cache, so a later scene's first frame has them
+    const urls = new Set();
+    const props = ['backgroundImage', 'maskImage', 'webkitMaskImage', 'borderImageSource', 'listStyleImage'];
+    for (const el of document.body.querySelectorAll('*')) {
+      const cs = getComputedStyle(el);
+      for (const p of props) for (const m of (cs[p] || '').matchAll(/url\(["']?([^"')]+)["']?\)/g)) if (!m[1].startsWith('#')) urls.add(m[1]);
+    }
+    for (const im of document.querySelectorAll('image')) {
+      const href = im.getAttribute('href') || im.getAttribute('xlink:href');
+      if (href && !href.startsWith('#')) urls.add(new URL(href, location.href).href);
+    }
+    await Promise.all([...urls].map((u) => preload(u, 'CSS/SVG image')));
+    const synced = new Set(M._videos.map((v) => v.el));
+    for (const v of document.querySelectorAll('video')) {
+      if (!synced.has(v)) problem('video', `<video ${v.id ? `#${v.id}` : v.currentSrc || v.src}> is not registered with M.video(), so it would play in wall-clock time`);
+    }
+  }
+
+  window.__problems = () => M._problems.slice();
   window.__ready = new Promise((resolve) => {
     const boot = async () => {
-      if (!window.__comp) M.comp({});
-      await Promise.all(M._tasks);
-      await document.fonts.ready;
-      await Promise.all(
-        [...document.images].map((img) =>
-          img.complete ? 0 : new Promise((r) => { img.onload = img.onerror = r; })));
-      await M.seek(0);
-      resolve(window.__comp);
+      try {
+        if (!window.__comp) M.comp({});
+        await settleTasks();
+        await loadFonts();
+        await loadImages();
+        await M.seek(0);
+      } catch (e) {
+        problem('boot', e && e.stack ? e.stack.split('\n').slice(0, 3).join(' | ') : String(e));
+      }
+      // resolve even on failure, so render tools report the problem instead of hanging until timeout
+      resolve({ ...window.__comp, problems: M._problems.slice() });
       if (!RENDER) dev();
     };
     if (document.readyState === 'complete') setTimeout(boot, 0);

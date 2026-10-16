@@ -159,6 +159,7 @@
    *  Sets every property it touches each frame (stateless), so it pairs safely with textOut. */
   K.textIn = (chars, t, t0, { each = 0.025, dur = 0.5, style = 'rise', dist = 40, ease = 'snap' } = {}) => {
     chars.forEach((c, i) => {
+      c._kIn = M.frame;
       const p = M.stagger(t, t0, i, each, dur, ease);
       if (style === 'blur') M.set(c, { o: p, blur: 12 * (1 - p), y: 8 * (1 - p) });
       else if (style === 'scale') M.set(c, { blur: 0, o: M.clamp(p * 3), s: 0.4 + 0.6 * M.ease.spring(0.4)(M.clamp((t - t0 - i * each) / dur)) });
@@ -166,9 +167,14 @@
       else M.set(c, { o: M.clamp(p * 1.6), y: dist * (1 - p), blur: 0 });
     });
   };
+  /** Before t0 a char rests fully visible, unless K.textIn already set it this frame — so textOut is
+   *  stateless whether it is called alone or after textIn. */
   K.textOut = (chars, t, t0, { each = 0.015, dur = 0.3, dist = -30, ease = 'inCubic' } = {}) => {
-    if (t < t0) return;
     chars.forEach((c, i) => {
+      if (t < t0) {
+        if (c._kIn !== M.frame) M.set(c, { o: 1, y: 0, blur: 0 });
+        return;
+      }
       const p = M.stagger(t, t0, i, each, dur, ease);
       M.set(c, { o: 1 - p, y: dist * p, blur: 6 * p });
     });
