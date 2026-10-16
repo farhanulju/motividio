@@ -27,7 +27,7 @@ import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import {
   ROOT, serve, args, projectDir, urlPath, launch, openComp, run, die, hasBin, dumpCues,
-  hashTree, engineHash, gitInfo, nextVersion, brief,
+  hashTree, engineHash, gitInfo, nextVersion, brief, capture,
 } from './lib/common.mjs';
 
 const a = args();
@@ -176,6 +176,9 @@ async function renderFormat(format, base, inputs, nFormats) {
   if (probe.video?.frames && probe.video.frames !== total) warnings.push(`output has ${probe.video.frames} frames, expected ${total}`);
   if (loudness && Math.abs(loudness.lufs - -14) > 1) warnings.push(`loudness ${loudness.lufs} LUFS (target −14)`);
   if (loudness && loudness.truePeak > -1) warnings.push(`true peak ${loudness.truePeak} dBTP (keep ≤ −1)`);
+  const levelsFile = path.join(dir, 'audio', 'levels.json');
+  const levels = withAudio && !a.audio && fs.existsSync(levelsFile) ? JSON.parse(fs.readFileSync(levelsFile, 'utf8')) : null;
+  if (levels?.worst != null && levels.worst < levels.target) warnings.push(`VO only ${levels.worst} dB over the bed in its quietest phrase (target ≥ ${levels.target}) — see audio/levels.json`);
 
   const secs = +((Date.now() - t0) / 1000).toFixed(1);
   const manifest = {
@@ -187,7 +190,7 @@ async function renderFormat(format, base, inputs, nFormats) {
     inputs: { ...inputs, audio: withAudio ? { file: path.relative(dir, audio).split(path.sep).join('/'), sha256: sha(fs.readFileSync(audio)) } : null },
     git: gitInfo(),
     versions: { node: process.version, chromium: browser.version(), ffmpeg: ffmpegVersion(), playwright: playwrightVersion() },
-    output: probe, loudness, warnings,
+    output: probe, loudness, voLevels: levels ? { worst: levels.worst, target: levels.target } : null, warnings,
   };
   fs.writeFileSync(out.replace(/\.mp4$/i, '') + '.json', JSON.stringify(manifest, null, 2));
   fs.rmSync(job, { recursive: true, force: true });
@@ -243,7 +246,7 @@ async function renderChunk(pg, errors, { s, e, file }, fps, settings, prog) {
       if (stopping) throw Object.assign(new Error('stopped'), { fatal: true });
       await pg.evaluate((t) => window.__seek(t), f / fps);
       if (errors.length && !allowErrors) throw Object.assign(new Error(errors[0].detail), { fatal: true });
-      const buf = await pg.screenshot({ type: settings.frames === 'png' ? 'png' : 'jpeg', quality: settings.frames === 'png' ? undefined : 92, animations: 'allow', caret: 'hide' });
+      const buf = await capture(pg, { type: settings.frames === 'png' ? 'png' : 'jpeg', quality: 92 });
       if (!ff.stdin.write(buf)) await Promise.race([new Promise((r) => ff.stdin.once('drain', r)), closed]);
       n++;
       prog(1);

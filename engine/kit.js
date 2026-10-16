@@ -72,12 +72,73 @@
   };
 
   /** number ticker */
-  K.count = (el, t, t0, t1, from, to, { decimals = 0, prefix = '', suffix = '', ease = 'outExpo', sep = ',' } = {}) => {
+  K.count = (el, t, t0, t1, from, to, { decimals = 0, prefix = '', suffix = '', ease = 'outExpo', sep = ',', ticks = 0, cue = null } = {}) => {
     const v = M.lerp(from, to, M.tw(t, t0, t1, ease));
     let s = v.toFixed(decimals);
     if (sep) s = s.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
     M.$(el).textContent = prefix + s + suffix;
+    // sound: `ticks` 'tick' cues while it runs (bunched early, like the number), `cue` when it settles
+    // (e.g. cue: 'chaching' for a money reveal — map it to a recording in the library or score.json → sounds)
+    for (let i = 0; i < ticks; i++) M.cue(t0 + (t1 - t0) * (1 - Math.pow(1 - i / ticks, 0.5)) * 0.85, 'tick', { gain: 0.5 });
+    if (cue) M.cue(t1 - 0.05, cue);
     return v;
+  };
+
+  /**
+   * Caption: one or more lines that come in and leave on their own clocks. Stateless by construction —
+   * each line is on textIn until its out-time, then on textOut.
+   *   M.on(t => K.caption(['#cap1', '#cap2'], t, 3.2, 6.0));
+   */
+  K.caption = (lines, t, tIn, tOut, { gap = 0.16, outGap = 0.05, style = 'rise', each = 0.022, dur = 0.5, dist = 50 } = {}) => {
+    (Array.isArray(lines) ? lines : [lines]).forEach((sel, k) => {
+      const el = M.$(sel);
+      const ch = el._kChars || (el._kChars = M.split(el));
+      const t1 = tOut + k * outGap;
+      if (t < t1) K.textIn(ch, t, tIn + k * gap, { each, dur, style, dist });
+      else K.textOut(ch, t, t1, { each: 0.008, dur: 0.24, dist: -dist * 0.7 });
+    });
+  };
+
+  /**
+   * End card: the real logo mark + product name on ONE line at cap height, then a tagline, CTA and store
+   * badge. Pass real asset URLs — never a typed stand-in for a logo. Lands with a 'thump'.
+   *   const end = K.endCard({ icon: 'assets/icon.svg', name: 'OrderPilot', tagline: 'POs on autopilot',
+   *                           badge: 'assets/shopify-app-store-badge.svg', url: 'apps.shopify.com/orderpilot' });
+   *   M.on(t => end.at(t, 27.0));
+   */
+  K.endCard = ({ parent, icon, name, tagline = '', badge = null, url = '', size = 120, color = 'currentColor', font = 'inherit' } = {}) => {
+    const u = (M.portrait ? M.W : M.H) / 1080;
+    const root = document.createElement('div');
+    root.style.cssText = `position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${36 * u}px;color:${color};font-family:${font};pointer-events:none`;
+    root.innerHTML =
+      `<div class="k-row" style="display:flex;align-items:center;gap:${size * 0.28 * u}px;line-height:1">` +
+        (icon ? `<img class="k-icon" src="${icon}" style="height:${size * u}px;width:auto;display:block">` : '') +
+        `<div class="k-name" style="font-size:${size * 0.92 * u}px;font-weight:700;letter-spacing:-0.035em;white-space:nowrap">${name}</div>` +
+      `</div>` +
+      (tagline ? `<div class="k-tag" style="font-size:${size * 0.34 * u}px;opacity:.8;letter-spacing:-0.01em">${tagline}</div>` : '') +
+      `<div class="k-cta" style="display:flex;align-items:center;gap:${28 * u}px">` +
+        (badge ? `<img class="k-badge" src="${badge}" style="height:${size * 0.62 * u}px;width:auto;display:block">` : '') +
+        (url ? `<div class="k-url" style="font-size:${size * 0.26 * u}px;opacity:.7">${url}</div>` : '') +
+      `</div>`;
+    M.$(parent || M.stage()).appendChild(root);
+    const q = (s) => root.querySelector(s);
+    const nameChars = M.split(q('.k-name'));
+    const tagChars = tagline ? M.split(q('.k-tag')) : [];
+    return {
+      el: root,
+      at(t, t0) {
+        M.cue(t0 + 0.12, 'thump');
+        root.style.visibility = t >= t0 ? 'visible' : 'hidden';
+        if (icon) {
+          const p = M.clamp((t - t0) / 0.6);
+          M.set(q('.k-icon'), { o: M.clamp(p * 4), s: 0.6 + 0.4 * M.ease.spring(0.4)(p), r: (1 - M.ease.snap(p)) * -12 });
+        }
+        K.textIn(nameChars, t, t0 + 0.12, { each: 0.03, dur: 0.5, dist: 40 * u });
+        if (tagChars.length) K.textIn(tagChars, t, t0 + 0.55, { each: 0.012, dur: 0.45, style: 'blur' });
+        const pc = M.tw(t, t0 + 0.8, t0 + 1.3, 'snap');
+        M.set(q('.k-cta'), { o: pc, y: (1 - pc) * 24 * u });
+      },
+    };
   };
 
   /** stroke-draw an SVG path/line/circle: p 0..1 */

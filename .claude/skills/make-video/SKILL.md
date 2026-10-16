@@ -1,6 +1,6 @@
 ---
 name: make-video
-description: Produce a finished video (launch film, ad, product walkthrough, showreel, explainer, social cut) from a prompt in this repo — intake, brand kit, reference grammar, director's brief, beat-grid gate, HTML composition, stills review, synthesized score + Fish Audio voice-over, critique loop, final MP4 render. Use whenever the user asks for any video, animation, motion graphics, ad, promo, trailer, demo or walkthrough.
+description: Produce a finished video (launch film, ad, product walkthrough, showreel, explainer, social cut) from a prompt in this repo — intake, brand kit, reference grammar, director's brief, beat-grid gate, HTML composition, stills review, recorded score + Fish Audio voice-over, critique loop, final MP4 render. Use whenever the user asks for any video, animation, motion graphics, ad, promo, trailer, demo or walkthrough.
 ---
 
 # make-video — the director's pipeline
@@ -17,7 +17,7 @@ Extract from the prompt; ask **one** compact question only for what's missing AN
 | Duration | launch 15s · ad 15s · walkthrough 45s · showreel 15s |
 | Formats | 16x9 (+ 9x16 if social) |
 | Voice | none for ≤15s launch/showreel; Fish Audio VO for walkthrough/explainer |
-| Music | synthesized, 120 BPM, style `pulse` |
+| Music | a recorded track from `library/` picked by mood, edited onto the cuts (`npm run library -- list`); no synth |
 | References | none (house grammar) |
 | Gates | show brief + beat grid before code, unless user says "just go"/"one shot" |
 
@@ -50,6 +50,8 @@ Edit `projects/<slug>/index.html`:
 - One `M.scene` per shot; times from `M.beat(n)` / `M.bar(n)`. Use `K.*` primitives and `studio/spec-list.md` timings.
 - `M.cue()` every sound that matters (kit components cue themselves).
 - Layout in `--u` units; branch layout on `M.portrait` / `M.format` for other aspect ratios.
+- Kit first: `K.caption` for text lines, `K.count` (`ticks`, `cue`) for numbers, `K.endCard` for the logo + store-badge end.
+- 3D: use `engine/stage3d.js` (`stage3d()`, `s.load`, `s.clip`, `s.frame`) instead of hand-rolling a renderer.
 
 ## 6. Look at it (style frames → motion)
 - `npm run stills -- projects/<slug> --scenes` → Read `out/stills/contact.png` and 2–3 full-size stills.
@@ -58,7 +60,8 @@ Edit `projects/<slug>/index.html`:
 - For each extra format: `--format 9x16`.
 
 ## 7. Sound
-Run the **score-to-beat** skill: `npm run score -- projects/<slug>` → music + SFX from cues + mix.wav (with VO ducking if `audio/vo.json` exists).
+Run the **score-to-beat** skill: `npm run score -- projects/<slug>` → recorded music edit + recorded SFX from cues + mix.wav
+(music and SFX duck under the VO). With VO, `npm run levels -- projects/<slug>` must show every phrase ≥ 6 dB over the bed.
 
 ## 8. Draft render + critique loop
 `npm run render -- projects/<slug> --fast` (→ `out/draft/`) → run the **critique-loop** skill (≥ 2 rounds, stop at all axes ≥ 8 or round 4).
@@ -70,6 +73,8 @@ flags (usually a property one function sets and nothing resets), then `npm run r
 (no `--fast`). Each MP4 gets a manifest beside it (`out/<name>[-vN].json`): check its `warnings` (frame count,
 loudness off −14 LUFS, true peak above −1 dBTP) and fix them before delivering. Outputs are versioned automatically —
 report the exact file names. If a render is interrupted, re-run the same command: it resumes.
+Then `npm run qa -- projects/<slug>`: errors (resolution, fps, duration, codec, missing audio) block delivery;
+fix its warnings (loudness, dead holds, black gaps, VO levels, text outside the safe area) or name them as known weak spots.
 Deliver: paths of every MP4, duration/format table, final scores, known weak spots, what to try next.
 
 ## 10. Learn — mandatory, every time a project ends

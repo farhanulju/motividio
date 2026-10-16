@@ -1,0 +1,511 @@
+{
+  "version": 1,
+  "note": "Media lives in library/sfx and library/music (gitignored). Re-download from the source if missing.",
+  "sfx": {
+    "click": [
+      {
+        "file": "sfx/click/click.mp3",
+        "dur": 0.14,
+        "gain": 0.9,
+        "peak": 0,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 1.045,
+        "lufs": -25.2
+      }
+    ],
+    "whoosh": [
+      {
+        "file": "sfx/whoosh/whoosh_fast.mp3",
+        "peak": 1.078,
+        "gain": 0.45,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 1.334,
+        "lufs": -13
+      },
+      {
+        "file": "sfx/whoosh/whoosh.mp3",
+        "gain": 0.45,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.713,
+        "length": 1.757,
+        "lufs": -15.4
+      }
+    ],
+    "swoosh": [
+      {
+        "file": "sfx/swoosh/whoosh_deep.mp3",
+        "peak": 0.569,
+        "gain": 0.35,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 2.977,
+        "lufs": -12.8
+      },
+      {
+        "file": "sfx/swoosh/wind_swoosh.mp3",
+        "gain": 0.35,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 1.168,
+        "length": 3.204,
+        "lufs": -10.2
+      }
+    ],
+    "whip": [
+      {
+        "file": "sfx/whip/whip.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.047,
+        "length": 0.327,
+        "lufs": -70
+      }
+    ],
+    "pop": [
+      {
+        "file": "sfx/pop/pop_whoosh.mp3",
+        "peak": 0.02,
+        "gain": 0.2,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 0.18,
+        "lufs": -70
+      }
+    ],
+    "chime": [
+      {
+        "file": "sfx/chime/chime_correct.mp3",
+        "peak": 0.02,
+        "gain": 0.16,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 1.96,
+        "lufs": -17.5
+      },
+      {
+        "file": "sfx/chime/chime_positive.mp3",
+        "peak": 0.18,
+        "gain": 0.14,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 2.8,
+        "lufs": -14.8
+      }
+    ],
+    "impact": [
+      {
+        "file": "sfx/impact/impact_big.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 2.172,
+        "length": 7.929,
+        "lufs": -15.8
+      },
+      {
+        "file": "sfx/impact/trailer_whoosh_impact.mp3",
+        "gain": 0.45,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 3.037,
+        "length": 9.568,
+        "lufs": -15.3
+      }
+    ],
+    "thump": [
+      {
+        "file": "sfx/thump/wood_hit.mp3",
+        "peak": 0.05,
+        "gain": 0.35,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 0.417,
+        "lufs": -20.1
+      },
+      {
+        "file": "sfx/thump/plate_thump.mp3",
+        "gain": 0.45,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.063,
+        "length": 1.352,
+        "lufs": -23.2
+      }
+    ],
+    "paper": [
+      {
+        "file": "sfx/paper/paper_slide.mp3",
+        "peak": 0.349,
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 1.094,
+        "lufs": -24.4
+      }
+    ],
+    "page": [
+      {
+        "file": "sfx/page/page_turn.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.144,
+        "length": 0.452,
+        "lufs": -29.2
+      },
+      {
+        "file": "sfx/page/magazine_paging.mp3",
+        "gain": 0.45,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 2.931,
+        "length": 6.338,
+        "lufs": -26.1
+      },
+      {
+        "file": "sfx/page/newspaper_fall.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.206,
+        "length": 0.614,
+        "lufs": -23.6
+      }
+    ],
+    "typing": [
+      {
+        "file": "sfx/typing/typing.mp3",
+        "from": 1.15,
+        "fadeOut": 0.08,
+        "gain": 0.4,
+        "peak": 0,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 19.633,
+        "lufs": -20.4
+      }
+    ],
+    "writing": [
+      {
+        "file": "sfx/writing/pencil_write.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 1.753,
+        "length": 1.868,
+        "lufs": -17.5
+      },
+      {
+        "file": "sfx/writing/pencil_scribble.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.17,
+        "length": 1.189,
+        "lufs": -21.6
+      }
+    ],
+    "shutter": [
+      {
+        "file": "sfx/shutter/shutter1.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.195,
+        "length": 0.351,
+        "lufs": -70
+      },
+      {
+        "file": "sfx/shutter/shutter2.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.143,
+        "length": 0.627,
+        "lufs": -19.6
+      }
+    ],
+    "flash": [
+      {
+        "file": "sfx/flash/reporters_flash.mp3",
+        "gain": 0.45,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 1.64,
+        "length": 16.15,
+        "lufs": -14.5
+      }
+    ],
+    "applause": [
+      {
+        "file": "sfx/applause/applause_cheer.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 1.602,
+        "length": 17.837,
+        "lufs": -22.1
+      },
+      {
+        "file": "sfx/applause/applause_medium.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 1.689,
+        "length": 11.949,
+        "lufs": -16.8
+      }
+    ],
+    "cheer": [
+      {
+        "file": "sfx/cheer/cheer_victory.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 1.252,
+        "length": 10.059,
+        "lufs": -8.7
+      }
+    ],
+    "laugh": [
+      {
+        "file": "sfx/laugh/laugh_crowd.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 1.091,
+        "length": 7.449,
+        "lufs": -16.5
+      },
+      {
+        "file": "sfx/laugh/laugh_teens.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.72,
+        "length": 11.792,
+        "lufs": -16.1
+      }
+    ],
+    "crowd": [
+      {
+        "file": "sfx/crowd/crowd_talk.mp3",
+        "gain": 0.35,
+        "peak": 0,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 59.743,
+        "lufs": -16
+      }
+    ],
+    "heartbeat": [
+      {
+        "file": "sfx/heartbeat/heartbeat_single.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.031,
+        "length": 1.101,
+        "lufs": -15.6
+      },
+      {
+        "file": "sfx/heartbeat/heartbeat_fast.mp3",
+        "gain": 0.45,
+        "peak": 0,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 9.866,
+        "lufs": -16.6
+      }
+    ],
+    "truck": [
+      {
+        "file": "sfx/truck/truck_stop.mp3",
+        "peak": 0.23,
+        "from": 5.35,
+        "dur": 0.62,
+        "fadeIn": 0.04,
+        "fadeOut": 0.3,
+        "gain": 0.32,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 7.714,
+        "lufs": -11.5
+      }
+    ],
+    "splash": [
+      {
+        "file": "sfx/splash/splash.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.378,
+        "length": 1.478,
+        "lufs": -15.5
+      }
+    ],
+    "crunch": [
+      {
+        "file": "sfx/crunch/crunch.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.124,
+        "length": 0.938,
+        "lufs": -24
+      }
+    ],
+    "chew": [
+      {
+        "file": "sfx/chew/chew_src.mp3",
+        "gain": 0.45,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.947,
+        "length": 6.777,
+        "lufs": -28.8
+      }
+    ],
+    "sizzle": [
+      {
+        "file": "sfx/sizzle/sizzle_src.mp3",
+        "gain": 0.4,
+        "peak": 0,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 22.519,
+        "lufs": -19.1
+      }
+    ],
+    "flap": [
+      {
+        "file": "sfx/flap/fish_flap.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.048,
+        "length": 1.101,
+        "lufs": -23.5
+      }
+    ],
+    "pull": [
+      {
+        "file": "sfx/pull/bone_pull.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.105,
+        "length": 0.348,
+        "lufs": -70
+      }
+    ],
+    "meow": [
+      {
+        "file": "sfx/meow/cat_meow.mp3",
+        "gain": 0.5,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "peak": 0.441,
+        "length": 0.876,
+        "lufs": -13.6
+      }
+    ],
+    "river": [
+      {
+        "file": "sfx/river/river_amb.mp3",
+        "gain": 0.3,
+        "peak": 0,
+        "source": "mixkit.co",
+        "license": "Mixkit Sound Effects Free License",
+        "length": 60.168,
+        "lufs": -30.7
+      }
+    ]
+  },
+  "music": [
+    {
+      "file": "music/motivating-mornings.mp3",
+      "title": "Motivating Mornings",
+      "artist": "Ahjay Stelino",
+      "bpm": 120.9,
+      "mood": [
+        "upbeat",
+        "bright",
+        "morning",
+        "saas"
+      ],
+      "notes": "0–11.9 quiet intro · 11.95 full band enters · 89.0 final hit · ~93.2 ring-out",
+      "source": "mixkit.co",
+      "license": "Mixkit Stock Music Free License",
+      "length": 96.198,
+      "lufs": -9.9
+    },
+    {
+      "file": "music/discover.mp3",
+      "title": "Discover",
+      "mood": [
+        "inspiring",
+        "piano",
+        "story"
+      ],
+      "source": "mixkit.co",
+      "license": "Mixkit Stock Music Free License",
+      "length": 144,
+      "lufs": -14.2
+    },
+    {
+      "file": "music/a_new_life.mp3",
+      "title": "A New Life",
+      "mood": [
+        "hopeful",
+        "strings",
+        "story"
+      ],
+      "source": "mixkit.co",
+      "license": "Mixkit Stock Music Free License",
+      "length": 99.375,
+      "lufs": -14.8
+    },
+    {
+      "file": "music/dreaming_big.mp3",
+      "title": "Dreaming Big",
+      "mood": [
+        "uplifting",
+        "orchestral"
+      ],
+      "source": "mixkit.co",
+      "license": "Mixkit Stock Music Free License",
+      "length": 110.384,
+      "lufs": -12.3
+    },
+    {
+      "file": "music/possible_dreams.mp3",
+      "title": "Possible Dreams",
+      "mood": [
+        "cinematic",
+        "build"
+      ],
+      "source": "mixkit.co",
+      "license": "Mixkit Stock Music Free License",
+      "length": 159.313,
+      "lufs": -11.3
+    },
+    {
+      "file": "music/indian_meditations.mp3",
+      "title": "Indian Meditations",
+      "mood": [
+        "calm",
+        "flute",
+        "south-asian"
+      ],
+      "source": "mixkit.co",
+      "license": "Mixkit Stock Music Free License",
+      "length": 168,
+      "lufs": -11.6
+    }
+  ]
+}

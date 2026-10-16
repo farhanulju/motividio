@@ -7,7 +7,8 @@ description: Self-critique a rendered or in-progress video — grab stills, scor
 
 Each round:
 1. **Look**
-   - `npm run stills -- projects/<p> --every 0.5` → Read `out/stills/contact.png` (whole film at a glance).
+   - `npm run stills -- projects/<p> --every 0.5` → Read `out/stills/contact.png` (whole film at a glance; each tile is
+     labelled with its time and scene). The previous round's stills are in `out/stills-prev/` for before/after.
    - `npm run stills -- projects/<p> --scenes` → Read 3–5 full-size stills of the key moments.
    - Around each transition: `--at t-0.1,t,t+0.1,t+0.2` to see motion mid-flight (blur, overshoot, overlaps).
    - Check every delivery format (`--format 9x16`) for cropping and safe areas.

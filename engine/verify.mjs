@@ -16,7 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { serve, args, projectDir, urlPath, launch, openComp, brief } from './lib/common.mjs';
+import { serve, args, projectDir, urlPath, launch, openComp, brief, capture } from './lib/common.mjs';
 
 const a = args();
 const dir = projectDir(a._[0]);
@@ -106,7 +106,7 @@ async function main() {
 async function shoot({ page, errors }, f, fps) {
   await page.evaluate((t) => window.__seek(t), f / fps);
   if (errors.length && !allowErrors) throw new Error(`script error at ${(f / fps).toFixed(3)}s (frame ${f}): ${errors[0].detail}`);
-  const buf = await page.screenshot({ type: 'png', animations: 'allow', caret: 'hide' });
+  const buf = await capture(page);
   return { buf, hash: crypto.createHash('sha1').update(buf).digest('hex') };
 }
 

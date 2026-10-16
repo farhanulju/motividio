@@ -41,11 +41,14 @@ TTS uses your Fish Audio plan. Image and video generation through the MCP is quo
 - **HyperFrames by HeyGen** (in the Claude connector directory) and **Remotion** are alternative render routes. The default zero-dependency route doesn't need either.
 
 ## Toolchain
-Node 20+, ffmpeg/ffprobe, Playwright Chromium (`npm install && npx playwright install chromium`), and yt-dlp for downloading references. To check everything: `npm run doctor`.
+Node 20+, ffmpeg/ffprobe, Playwright Chromium (`npm install && npx playwright install chromium`), and yt-dlp for downloading references. To check everything: `npm run doctor`. Tests: `npm test` (unit) and `npm run test:smoke` (renders the demo); CI runs both on every push.
+
+## Sound library
+Scores use recorded sound. `library/library.json` indexes the studio's recordings (cue type → files, music with mood and bpm, source and license); the media files stay local because their licenses don't allow redistribution. `npm run library -- list` shows what's there and what's missing on this machine; `npm run library -- add <file> --type whoosh` adds one.
 
 ## Layout
 See [CLAUDE.md](CLAUDE.md). The parts:
-- `engine/`: runtime, kit, render, stills, score, mix, tts, ref, capture
+- `engine/`: runtime, kit, stage3d, render, stills, verify, qa, score, mix, levels, library, tts, ref, capture, learn
 - `studio/`: rules, playbooks, specs, prompts, learnings
 - `templates/`: brief, beat grid, style guide, brand kit, critique
 - `brands/`, `references/`, `projects/`: memory and work

@@ -17,10 +17,18 @@
     "doctor": "node engine/doctor.mjs",
     "vox": "node engine/audio/vox.mjs",
     "learn": "node engine/learn.mjs",
-    "verify": "node engine/verify.mjs"
+    "verify": "node engine/verify.mjs",
+    "levels": "node engine/audio/levels.mjs",
+    "library": "node engine/library.mjs",
+    "qa": "node engine/qa.mjs",
+    "test": "node --test tests/runtime.test.mjs tests/engine.test.mjs",
+    "test:smoke": "node tests/smoke.mjs"
   },
   "devDependencies": {
     "playwright": "^1.55.0",
     "three": "^0.170.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

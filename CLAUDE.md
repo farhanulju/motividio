@@ -25,9 +25,12 @@ Before starting any film, read: `studio/learnings.md` (taste memory), `studio/po
 |---|---|
 | `engine/runtime.js` | in-page timeline: `M.comp/scene/on/tw/keys/stagger/ease/split/set/cue/beat/video/rand` |
 | `engine/kit.js` | motion primitives: `K.cursor/type/count/draw/check/morph/swap/camera/textIn/textOut/grain/progress/bars` |
+| `engine/stage3d.js` | `stage3d()` — deterministic three.js stage: renderer, env light, `load` (blocks frame 0), `clip` (animation pinned to t), `frame`, skip-draw during the cue sweep |
 | `engine/cube.js` | `Cube3D` — a real CSS-3D 3×3 Rubik's cube driven by move notation (scramble/invert/jam/pop, lighting) |
 | `engine/*.mjs` | CLI tools (below) |
-| `engine/audio/` | `score.mjs` (music+SFX+beats), `sfx.mjs` (SFX library), `mix.mjs` (ducking + −14 LUFS), `tts-fish.mjs` (Fish Audio REST, s2.1-pro-free) |
+| `engine/audio/` | `score.mjs` (music+SFX+beats), `sfx.mjs` (sampler + legacy synth SFX), `mix.mjs` (ducking, two-pass −14 LUFS, VO level check), `levels.mjs`, `tts-fish.mjs` (Fish Audio REST, s2.1-pro-free) |
+| `library/` | recorded sound library: `library.json` (committed index: cue type → recordings, music with mood/bpm/track map, source + license); media files local only |
+| `tests/` | `npm test` (unit), `npm run test:smoke` (stills → verify → render on `_demo`); CI runs both |
 | `studio/` | motion-rules, playbooks (genres), spec-list (component timings), prompt-library, learnings, ledger.jsonl + policy.md (learning loop) |
 | `templates/` | director-brief, shotlist (beat grid), style-guide, brand, critique, project starter |
 | `brands/<slug>/` | brand memory: brand.md, screens/, logos/, extracted.json, characters/ |
@@ -48,6 +51,9 @@ Before starting any film, read: `studio/learnings.md` (taste memory), `studio/po
 | `vox projects/<slug>` | human vocal effects (gasps, laughs, crowd) from `audio/vox-script.json` → `audio/vox/`; place with `M.cue(t, 'sample', {file})` (own ducked stem) |
 | `ref <url\|file> --name <slug>` | download + frames + contact sheets + cut detection for a reference |
 | `capture <url> --brand <slug> [--pages /,/pricing] [--mobile]` | brand screenshots, logos, colors, fonts |
+| `levels projects/<slug>` | every VO phrase's dB over the bed (target ≥ 6) → `audio/levels.json` |
+| `library list \| scan \| add <file> --type <t>` | the recorded sound library (cue types, music tracks, peaks, licenses) |
+| `qa projects/<slug>` | delivery QA on the final renders: format/fps/duration/codec/audio (errors), loudness, dead holds, black gaps, VO levels, staleness, safe areas (warnings) |
 | `learn record projects/<slug>` | end-of-project episode: `learn.json` + critiques → `studio/ledger.jsonl` (reward), learnings log line, rebuilds `studio/policy.md` |
 | `learn stats` / `learn distill` | print the ledger summary / rebuild the policy |
 | `doctor` | toolchain check |
@@ -62,6 +68,8 @@ Before starting any film, read: `studio/learnings.md` (taste memory), `studio/po
 ## Working agreements
 - Show the user the brief summary and the beat grid before animation code, unless they say "just go" / "one shot it".
 - Always review with your own eyes (Read the contact sheet PNGs) before claiming a render is good.
+- Sound is recorded by default (`score.json → "sound": "recorded"`): cues map to `library/` recordings, music is an edit of a library track. Synth only for cube turns.
+- Before delivery: `npm run qa -- projects/<slug>` passes; its warnings are fixed or reported.
 - Long jobs: render with `--fast` while iterating; `npm run verify` must pass before the final render (no `--fast`).
 - `stills`/`render`/`verify` refuse a comp with missing images, fonts, stylesheets or page errors. Fix the cause; for a load problem the film accepts on purpose, list it in `M.comp({ ignore: ['substring'] })` rather than using `--allow-errors`.
 - Every time a project ends (delivered, accepted, rejected or abandoned), run the make-video **Learn** step: fill `learn.json`, `npm run learn -- record projects/<slug>`, fix generic mistakes at their source in the repo, and update `brands/<slug>/brand.md`.

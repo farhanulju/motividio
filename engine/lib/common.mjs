@@ -144,6 +144,18 @@ function dedupe(problems) {
   });
 }
 
+/**
+ * Screenshot the page through CDP with optimizeForSpeed: same decoded pixels as page.screenshot(),
+ * ~1.7× faster (cheaper PNG compression). type 'png' | 'jpeg' (quality 0–100).
+ */
+const cdpSessions = new WeakMap();
+export async function capture(page, { type = 'png', quality = 92 } = {}) {
+  let cdp = cdpSessions.get(page);
+  if (!cdp) { cdp = await page.context().newCDPSession(page); cdpSessions.set(page, cdp); }
+  const r = await cdp.send('Page.captureScreenshot', { format: type, ...(type === 'jpeg' ? { quality } : {}), optimizeForSpeed: true, captureBeyondViewport: false });
+  return Buffer.from(r.data, 'base64');
+}
+
 const ASSET_TYPES = new Set(['image', 'font', 'stylesheet', 'script', 'media']);
 function watchErrors(page) {
   const errors = [];

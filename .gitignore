@@ -15,3 +15,6 @@ projects/*
 brands/*
 !brands/.gitkeep
 !brands/cubenation-arena/
+# recorded sound library: the manifest is shared, the media stays local (license terms)
+library/*
+!library/library.json

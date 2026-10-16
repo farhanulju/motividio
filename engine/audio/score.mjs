@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /**
- * Score a film in code: original music bed + synthesized SFX + beats.json on one timeline.
+ * Score a film in code: music + SFX + beats.json on one timeline.
+ * "sound": "recorded" (the default for new projects) plays recorded library files for cues and edits a
+ * recorded track for music (engine/library.mjs); otherwise music and SFX are synthesized (legacy).
  *
  *   node engine/audio/score.mjs projects/<name> [--beats-only] [--no-mix] [--bpm 120] [--style pulse]
  *
@@ -19,6 +21,7 @@ import { args, projectDir } from '../lib/common.mjs';
 import { SR, Bus, SVF, Osc, rng, mtof, reverb, keyRoot, chord } from './dsp.mjs';
 import { renderSfx } from './sfx.mjs';
 import { mix } from './mix.mjs';
+import { loadLibrary, recordedCues, musicCues } from '../library.mjs';
 
 const STYLES = {
   pulse:   ['kick', 'hat', 'bass', 'pad', 'arp'],
@@ -37,7 +40,11 @@ const read = (f) => (fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) :
 const S = read(path.join(audioDir, 'score.json')) || {};
 const cuesFile = read(path.join(audioDir, 'cues.json')) || {};
 
-const bpm = +a.bpm || S.bpm || 120;
+// "sound": "recorded" → cues play recorded library files and the music is an edit of a recorded track
+const recorded = S.sound === 'recorded';
+const lib = recorded ? loadLibrary() : null;
+const libTrack = recorded && S.music?.file ? lib.music.find((m) => S.music.file === `library:${m.file}`) : null;
+const bpm = +a.bpm || S.bpm || libTrack?.bpm || 120;
 const duration = S.duration || cuesFile.comp?.duration || 15;
 const style = a.style || S.style || 'pulse';
 const offset = S.offset || 0;
@@ -70,6 +77,18 @@ if (S.composer) {
   const bus = await mod.default({ duration, bpm, spb, bar, offset, S, cues, dir, audioDir, dsp: await import('./dsp.mjs'), renderSfx });
   bus.writeWav(path.join(audioDir, 'music.wav'));
   console.log(`✔ music.wav via composer ${S.composer}`);
+} else if (recorded) {
+  const out = path.join(audioDir, 'music.wav');
+  if (S.music?.file) {
+    const bus = new Bus(duration + 0.01);
+    renderSfx(bus, musicCues(S.music, duration, audioDir), { baseDir: audioDir });
+    bus.master(-1.5, 1.0).fadeOut(0.3);
+    bus.writeWav(out);
+    console.log(`✔ music.wav — edit of ${S.music.file}${libTrack ? ` (${libTrack.title}, ${libTrack.license})` : ''}`);
+  } else {
+    fs.rmSync(out, { force: true });
+    console.log('  (no music: set score.json → music.file to a track from `npm run library -- list`)');
+  }
 } else {
 // ---- arrangement ----
 const sections = S.sections || (() => {
@@ -207,8 +226,15 @@ music.writeWav(path.join(audioDir, 'music.wav'));
 }
 
 // ---- SFX ---- (sample cues = human vocal effects → their own stem, so the mix can duck music under them)
+let playCues = cues;
+if (recorded) {
+  const r = recordedCues(cues, { lib, overrides: S.sounds || {}, audioDir });
+  playCues = r.cues;
+  const dropped = Object.entries(r.dropped);
+  if (dropped.length) console.warn(`  ⚠ no recording for: ${dropped.map(([k, n]) => `${k} ×${n}`).join(', ')} — silent. Add one (npm run library -- add <file> --type <t>) or map it in score.json → sounds`);
+}
 const isVox = (c) => c.type === 'sample' && c.duck !== false;
-const sfxCues = cues.filter((c) => !isVox(c)), voxCues = cues.filter(isVox);
+const sfxCues = playCues.filter((c) => !isVox(c)), voxCues = playCues.filter(isVox);
 const sfx = new Bus(duration + 0.01);
 renderSfx(sfx, sfxCues, { baseDir: audioDir });
 const sfxSend = reverb(sfx, { room: 0.7, damp: 0.4 });
@@ -223,6 +249,6 @@ if (voxCues.length) {
   vb.master(-1, 1.0).fadeOut(0.02);
   vb.writeWav(voxFile);
 } else fs.rmSync(voxFile, { force: true });
-console.log(`✔ music.wav (${S.composer || `${style}, ${S.key || 'A'} ${scale}`}) + sfx.wav (${sfxCues.length} cues)${voxCues.length ? ` + voxfx.wav (${voxCues.length} vocal effects)` : ''}`);
+console.log(`✔ ${recorded ? 'recorded' : `music.wav (${S.composer || `${style}, ${S.key || 'A'} ${scale}`})`} + sfx.wav (${sfxCues.length} cues)${voxCues.length ? ` + voxfx.wav (${voxCues.length} vocal effects)` : ''}`);
 
 if (!a['no-mix']) await mix(dir, { duration, music: S.gain?.music, sfx: S.gain?.sfx, voxfx: S.gain?.voxfx });

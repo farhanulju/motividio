@@ -38,10 +38,11 @@ Do instead:
 
 ## 3. Sound — picture and sound are one timeline
 - Default: 120 BPM (beat = 0.5s, bar = 2s). Cuts, morphs and text slams land on beats; big hits on downbeats.
+- Recorded sound first: cues play recordings from `library/` (aligned on each file's peak) and music is an edit of a recorded track, cut so its entries and hits land on the picture. No synthesized music or UI sounds (cube turns excepted).
 - Workflow: `audio/score.json` → `npm run score -- <p> --beats-only` → time the animation with `M.loadBeats()` + `M.beat(n)`/`M.bar(n)` → declare sounds with `M.cue(t, type)` (kit components cue themselves) → `npm run score -- <p>` → mix.wav.
 - SFX vocabulary is consistent within a film: `click` cursor press · `key` typing · `pop` appear · `tick` counters/list · `whoosh`/`swoosh` morphs & camera · `chime` success · `ding` toast · `toggle` switches · `glitch` errors · `riser`→`impact` reveals · `thump` logo land · `shimmer` magic moments.
 - Not every motion gets a sound. Score the important 30–50%; silence makes hits land.
-- Voice-over: Fish Audio (MCP `fish-audio`, or `npm run tts`). Write VO first for VO-led films and time the picture to the measured line durations. Music ducks under VO automatically. Master at −14 LUFS.
+- Voice-over: Fish Audio (MCP `fish-audio`, or `npm run tts`). Write VO first for VO-led films and time the picture to the measured line durations. Music (hard) and SFX (lightly) duck under VO automatically; every VO phrase must sit ≥ 6 dB over the bed (`npm run levels`). Master at −14 LUFS, true peak ≤ −1 dBTP.
 - The film must still read with sound off (social autoplay): text carries the story, sound adds weight.
 
 ## 4. Feedback loop — look, score, fix, repeat
@@ -49,5 +50,5 @@ Do instead:
 2. **Gate 2 — beat grid**: `shotlist.md` table approved **before writing animation code** (unless the user said "just go").
 3. **Style frames**: build the comp, `npm run stills -- <p> --scenes`, Read the contact sheet + key stills. Fix anything generic before animating further.
 4. **Draft**: `npm run stills -- <p> --every 0.25` around transitions to check motion; then `npm run render -- <p> --fast`.
-5. **Critique**: score with `templates/critique.md` (save as `projects/<p>/critique-<n>.md`). Fix the lowest axis first. Repeat until every axis ≥ 8 or 4 rounds, then `npm run verify` (each format) and the final render (no `--fast`) for every format.
+5. **Critique**: score with `templates/critique.md` (save as `projects/<p>/critique-<n>.md`). Fix the lowest axis first. Repeat until every axis ≥ 8 or 4 rounds, then `npm run verify` (each format), the final render (no `--fast`) for every format, and `npm run qa`.
 6. **Learn** (every project end, no exceptions): fill `learn.json` → `npm run learn -- record projects/<p>` (ledger + reward + learnings line + policy). Fix generic mistakes in the repo itself. From 100 episodes on, `studio/policy.md` is ACTIVE and steers technique choice.

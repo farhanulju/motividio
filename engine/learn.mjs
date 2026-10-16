@@ -20,9 +20,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { args, ROOT, die, projectDir } from './lib/common.mjs';
 
-const ACTIVATE_AT = 100;
+export const ACTIVATE_AT = 100;
 const LEDGER = path.join(ROOT, 'studio', 'ledger.jsonl');
 const POLICY = path.join(ROOT, 'studio', 'policy.md');
 const LEARNINGS = path.join(ROOT, 'studio', 'learnings.md');
@@ -39,7 +40,7 @@ const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const slugTag = (s) => String(s).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 /** Pull axis scores out of every critique-<n>.md: first number seen per axis = first round, last = final. */
-function critiqueScores(dir) {
+export function critiqueScores(dir) {
   const files = fs.readdirSync(dir).filter((f) => /^critique-\d+\.md$/.test(f))
     .sort((a, b) => parseInt(a.match(/\d+/)) - parseInt(b.match(/\d+/)));
   const first = {}, final = {};
@@ -59,11 +60,13 @@ function critiqueScores(dir) {
   return { first, final, rounds: files.length };
 }
 
-function reward(ep) {
+export function reward(ep) {
   const critique = mean(Object.values(ep.scores?.final || {}));
   const v = VERDICT[ep.user?.verdict];
   const userCaught = (ep.mistakes || []).filter((m) => m.caught === 'user').length;
   const efficiency = clamp(10 - 2 * (ep.user?.revisions || 0) - Math.max(0, (ep.rounds || 0) - 2) - userCaught, 0, 10);
+  // no critique and no verdict = no quality signal: efficiency alone would score an unknown film 10/10
+  if (Number.isNaN(critique) && v === undefined) return null;
   const parts = [];
   if (!Number.isNaN(critique)) parts.push([critique, v === undefined ? 0.7 : 0.4]);
   if (v !== undefined) parts.push([v, Number.isNaN(critique) ? 0.7 : 0.4]);
@@ -77,19 +80,22 @@ function readLedger() {
   return fs.readFileSync(LEDGER, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
 }
 
-function record(dirArg) {
-  const dir = projectDir(dirArg);
-  const lf = path.join(dir, 'learn.json');
+/** record projects/<slug> (reads its learn.json), or record path/to/learn.json (a version, or a film made outside the repo; "dir" points at its project for critiques) */
+function record(arg) {
+  let lf, dir;
+  if (/\.json$/i.test(arg)) { lf = path.resolve(arg); }
+  else { dir = projectDir(arg); lf = path.join(dir, 'learn.json'); }
   if (!fs.existsSync(lf)) die(`missing ${path.relative(ROOT, lf)} — copy templates/project/learn.json and fill it in`);
   const L = JSON.parse(fs.readFileSync(lf, 'utf8'));
-  const parsed = critiqueScores(dir);
+  if (!dir && L.dir) dir = projectDir(L.dir);
+  const parsed = dir ? critiqueScores(dir) : { first: {}, final: {}, rounds: 0 };
   const scores = L.scores || { first: parsed.first, final: parsed.final };
   if (!L.learning?.trim()) die('learn.json → "learning" is empty: write the one-line lesson before recording');
   if (!L.user?.verdict) console.warn('⚠ learn.json → user.verdict is empty; reward uses the self-critique only');
   if (!Object.keys(scores.final || {}).length) console.warn('⚠ no critique scores found (critique-<n>.md or learn.json → scores)');
 
   const ep = {
-    project: L.project || path.basename(dir), version: L.version || 'v1',
+    project: L.project || path.basename(dir || path.dirname(lf)), version: L.version || 'v1',
     date: L.date || new Date().toISOString().slice(0, 10),
     genre: slugTag(L.genre || 'unknown'), route: slugTag(L.route || 'html'),
     duration: L.duration, formats: L.formats,
@@ -98,6 +104,7 @@ function record(dirArg) {
     user: { verdict: L.user?.verdict || '', revisions: L.user?.revisions || 0, feedback: L.user?.feedback || [] },
     mistakes: (L.mistakes || []).map((m) => ({ ...m, tag: slugTag(m.tag || 'other') })),
     repoChanges: L.repoChanges || [], learning: L.learning.trim(),
+    ...(L.backfilled ? { backfilled: true } : {}),
   };
   ep.reward = reward(ep);
 
@@ -105,20 +112,22 @@ function record(dirArg) {
   eps.push(ep);
   eps.sort((a, b) => a.date.localeCompare(b.date));
   fs.writeFileSync(LEDGER, eps.map((e) => JSON.stringify(e)).join('\n') + '\n');
-  console.log(`✔ episode ${eps.length}: ${ep.project} ${ep.version} · reward ${ep.reward}/10 → studio/ledger.jsonl`);
+  console.log(`✔ episode ${eps.length}: ${ep.project} ${ep.version} · reward ${ep.reward ?? '— (no critique or verdict)'}${ep.reward != null ? '/10' : ''} → studio/ledger.jsonl`);
 
   // the human-readable log line in learnings.md (newest first, once per project version)
   const md = fs.readFileSync(LEARNINGS, 'utf8');
   const tag = `${ep.date} · ${ep.project}${ep.version !== 'v1' ? ' ' + ep.version : ''} ·`;
-  if (!md.includes(`- ${tag}`)) {
+  if (!ep.backfilled && !md.includes(`- ${tag}`)) { // backfilled episodes are already in the log
     fs.writeFileSync(LEARNINGS, md.replace(/^## Log\s*\n/m, (h) => `${h}- ${tag} ${ep.learning}\n`));
     console.log('✔ log line added to studio/learnings.md');
   }
   distill(eps);
 }
 
-function analyse(eps) {
+export function analyse(eps) {
   const n = eps.length;
+  const all = eps;
+  eps = eps.filter((e) => e.reward != null); // unscored episodes still count for mistakes, not for rewards
   const baseline = mean(eps.map((e) => e.reward));
   const techs = {};
   for (const e of eps) for (const t of e.techniques) (techs[t] ||= []).push(e.reward);
@@ -128,7 +137,7 @@ function analyse(eps) {
   })).sort((a, b) => b.adv - a.adv);
 
   const mist = {};
-  for (const e of eps) for (const m of e.mistakes) {
+  for (const e of all) for (const m of e.mistakes) {
     const k = (mist[m.tag] ||= { tag: m.tag, count: 0, user: 0, last: null, fix: '' });
     k.count++; if (m.caught === 'user') k.user++;
     if (!k.last || e.date >= k.last) { k.last = e.date; k.fix = m.fix || k.fix; k.what = m.what; }
@@ -136,8 +145,8 @@ function analyse(eps) {
   const mistakes = Object.values(mist).sort((a, b) => b.count + b.user - (a.count + a.user));
 
   const axis = AXES.map((a) => ({
-    a, first: r1(mean(eps.map((e) => e.scores?.first?.[a]).filter((x) => x !== undefined))),
-    final: r1(mean(eps.map((e) => e.scores?.final?.[a]).filter((x) => x !== undefined))),
+    a, first: r1(mean(all.map((e) => e.scores?.first?.[a]).filter((x) => x !== undefined))),
+    final: r1(mean(all.map((e) => e.scores?.final?.[a]).filter((x) => x !== undefined))),
   })).filter((x) => !Number.isNaN(x.first)).sort((x, y) => x.first - y.first);
 
   const genres = {};
@@ -199,9 +208,11 @@ function stats() {
   console.log('weakest axes:  ', A.axis.slice(0, 3).map((x) => `${x.a} ${x.first}→${x.final}`).join(', ') || '–');
 }
 
-const a = args();
-const cmd = a._[0];
-if (cmd === 'record') record(a._[1] || die('usage: learn record projects/<slug>'));
-else if (cmd === 'distill') distill();
-else if (cmd === 'stats') stats();
-else die('usage: node engine/learn.mjs record projects/<slug> | distill | stats');
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const a = args();
+  const cmd = a._[0];
+  if (cmd === 'record') record(a._[1] || die('usage: learn record projects/<slug> | path/to/learn.json'));
+  else if (cmd === 'distill') distill();
+  else if (cmd === 'stats') stats();
+  else die('usage: node engine/learn.mjs record projects/<slug> | path/to/learn.json | distill | stats');
+}
